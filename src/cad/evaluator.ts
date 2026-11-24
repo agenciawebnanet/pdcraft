@@ -423,7 +423,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
         const wy = evaluateExpression(p.width ?? 30, resolvedParams, 30);
         const hz = evaluateExpression(p.height ?? 20, resolvedParams, 20);
         const corner = (p.corner as [number, number, number]) ?? [-lx / 2, -wy / 2, 0];
-        const bodyName = p.body_name || feat.name || 'Body';
+        const bodyName = p.body_name || feat.name || 'Corpo';
         const acc = ensureBody(bodyName, compId);
         acc.parts.push({
           kind: 'box',
@@ -441,7 +441,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
         const h = evaluateExpression(p.height ?? 30, resolvedParams, 30);
         const base = (p.base as [number, number, number]) ?? [0, 0, 0];
         const axis = (p.axis as [number, number, number]) ?? [0, 0, 1];
-        const bodyName = p.body_name || (p.operation === 'new' ? feat.name : null) || (lastBodyKey ? bodyAcc.get(lastBodyKey)!.name : 'Body');
+        const bodyName = p.body_name || (p.operation === 'new' ? feat.name : null) || (lastBodyKey ? bodyAcc.get(lastBodyKey)!.name : 'Corpo');
         const acc = ensureBody(bodyName, compId);
 
         let rot: [number, number, number] = [0, 0, 0];
@@ -467,7 +467,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
       case 'solid.sphere': {
         const r = evaluateExpression(p.radius ?? 15, resolvedParams, 15);
         const center = (p.center as [number, number, number]) ?? [0, 0, r];
-        const bodyName = p.body_name || feat.name || 'Sphere';
+        const bodyName = p.body_name || feat.name || 'Esfera';
         const acc = ensureBody(bodyName, compId);
         acc.parts.push({
           kind: 'sphere',
@@ -508,7 +508,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
 
         const bodyName =
           p.body_name ||
-          (op === 'join' && lastBodyKey ? bodyAcc.get(lastBodyKey)!.name : feat.name || 'Body');
+          (op === 'join' && lastBodyKey ? bodyAcc.get(lastBodyKey)!.name : feat.name || 'Corpo');
         const acc = ensureBody(bodyName, compId);
 
         // Sort contours by bounding area descending: largest is outer, enclosed ones are holes if concentric/smaller
@@ -547,7 +547,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
       case 'solid.revolve': {
         const sketch = sketchMap.get(p.sketchId || p.sketch || '') ?? doc.sketches[0];
         const angle = evaluateExpression(p.angle ?? 360, resolvedParams, 360);
-        const bodyName = p.body_name || feat.name || 'Revolve';
+        const bodyName = p.body_name || feat.name || 'Revolução';
         const acc = ensureBody(bodyName, compId);
         let pts: [number, number][] = [
           [8, 0],
@@ -733,7 +733,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
 
       case 'sheet.flange': {
         const thickness = evaluateExpression(p.thickness ?? doc.sheetThicknessMm ?? 2, resolvedParams, 2);
-        const bodyName = p.body_name || 'Sheet Metal Body';
+        const bodyName = p.body_name || 'Corpo em Chapa';
         const acc = ensureBody(bodyName, compId);
         if (p.sketch) {
           const sketch = sketchMap.get(p.sketch);
@@ -890,7 +890,7 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
 
       case 'imported.mesh': {
         if (Array.isArray(p.positions)) {
-          const bodyName = p.body_name || feat.name || 'Imported Mesh';
+          const bodyName = p.body_name || feat.name || 'Malha Importada';
           const acc = ensureBody(bodyName, compId);
           acc.parts.push({
             kind: 'raw',

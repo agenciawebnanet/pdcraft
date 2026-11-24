@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { DARK_TOKENS, LIGHT_TOKENS, ThemeMode } from './theme/tokens';
+import { DARK_TOKENS, getMaterialSpec, LIGHT_TOKENS, ThemeMode } from './theme/tokens';
 import {
   CadFeature,
   CadParameter,
@@ -10,7 +10,6 @@ import {
   RibbonTab,
   SampleDesignMeta,
   SketchData,
-  SketchEntity,
   VisualStyle,
 } from './cad/types';
 import { evaluateDocument } from './cad/evaluator';
@@ -40,27 +39,27 @@ const STORAGE_RECENT_KEY = 'pdcraft_recent_designs_v1';
 const STORAGE_THEME_KEY = 'pdcraft_theme_v1';
 
 const PALETTE_COMMANDS: PaletteCommand[] = [
-  { id: 'sketch.create', label: 'New Sketch', category: 'Sketch', shortcut: 'S' },
-  { id: 'solid.extrude', label: 'Extrude', category: 'Solid', shortcut: 'E' },
-  { id: 'solid.box', label: 'Create Box', category: 'Solid' },
-  { id: 'solid.cylinder', label: 'Create Cylinder', category: 'Solid' },
-  { id: 'solid.sphere', label: 'Create Sphere', category: 'Solid' },
-  { id: 'solid.fillet', label: 'Fillet Edges', category: 'Modify' },
-  { id: 'solid.chamfer', label: 'Chamfer Edges', category: 'Modify' },
-  { id: 'solid.shell', label: 'Shell Body', category: 'Modify' },
-  { id: 'solid.hole', label: 'Hole', category: 'Create' },
-  { id: 'solid.pattern.circular', label: 'Circular Pattern', category: 'Arrange' },
-  { id: 'solid.pattern.rectangular', label: 'Rectangular Pattern', category: 'Arrange' },
-  { id: 'sheet.flange', label: 'Sheet Metal Flange', category: 'Sheet Metal' },
-  { id: 'sheet.hem', label: 'Sheet Metal Hem', category: 'Sheet Metal' },
-  { id: 'parameters.change', label: 'Parameters Table', category: 'Manage', shortcut: 'P' },
-  { id: 'material.assign', label: 'Assign Physical Material', category: 'Manage' },
-  { id: 'inspect.measure', label: 'Measure Distance', category: 'Inspect', shortcut: 'M' },
-  { id: 'inspect.section', label: 'Toggle Section Cut', category: 'Inspect' },
-  { id: 'component.properties', label: 'Mass Properties', category: 'Inspect' },
-  { id: 'view.fit', label: 'Fit Model to View', category: 'View', shortcut: 'F' },
-  { id: 'view.grid', label: 'Toggle Work Grid', category: 'View' },
-  { id: 'file.save_mesh', label: 'Export STL / OBJ / glTF', category: 'File' },
+  { id: 'sketch.create', label: 'Novo Esboço', category: 'Esboço', shortcut: 'S' },
+  { id: 'solid.extrude', label: 'Extrusão', category: 'Sólido', shortcut: 'E' },
+  { id: 'solid.box', label: 'Criar Caixa', category: 'Sólido' },
+  { id: 'solid.cylinder', label: 'Criar Cilindro', category: 'Sólido' },
+  { id: 'solid.sphere', label: 'Criar Esfera', category: 'Sólido' },
+  { id: 'solid.fillet', label: 'Filete nas Arestas', category: 'Modificar' },
+  { id: 'solid.chamfer', label: 'Chanfro nas Arestas', category: 'Modificar' },
+  { id: 'solid.shell', label: 'Casca (Shell)', category: 'Modificar' },
+  { id: 'solid.hole', label: 'Furo', category: 'Criar' },
+  { id: 'solid.pattern.circular', label: 'Padrão Circular', category: 'Organizar' },
+  { id: 'solid.pattern.rectangular', label: 'Padrão Retangular', category: 'Organizar' },
+  { id: 'sheet.flange', label: 'Aba em Chapa Metálica', category: 'Chapa Metálica' },
+  { id: 'sheet.hem', label: 'Bainha em Chapa Metálica', category: 'Chapa Metálica' },
+  { id: 'parameters.change', label: 'Tabela de Parâmetros', category: 'Gerenciar', shortcut: 'P' },
+  { id: 'material.assign', label: 'Atribuir Material Físico', category: 'Gerenciar' },
+  { id: 'inspect.measure', label: 'Medir Distância', category: 'Inspecionar', shortcut: 'M' },
+  { id: 'inspect.section', label: 'Alternar Corte de Seção', category: 'Inspecionar' },
+  { id: 'component.properties', label: 'Propriedades de Massa', category: 'Inspecionar' },
+  { id: 'view.fit', label: 'Enquadrar Modelo na Vista', category: 'Visualizar', shortcut: 'F' },
+  { id: 'view.grid', label: 'Alternar Grade de Trabalho', category: 'Visualizar' },
+  { id: 'file.save_mesh', label: 'Exportar STL / OBJ / glTF', category: 'Arquivo' },
 ];
 
 export default function App() {
@@ -109,7 +108,7 @@ export default function App() {
   // Modals
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('Ready — Select a body, double-click a plane to sketch, or press Ctrl+K');
+  const [statusMessage, setStatusMessage] = useState('Pronto — Selecione um corpo, dê duplo clique num plano para esboçar ou pressione Ctrl+K');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -181,7 +180,7 @@ export default function App() {
       [activeDoc.id]: [...(r[activeDoc.id] ?? []), activeDoc],
     }));
     setDocuments((docs) => docs.map((d) => (d.id === activeDoc.id ? previous : d)));
-    setStatusMessage('Undo applied');
+    setStatusMessage('Desfazer aplicado');
   }, [activeDoc, undoStacks]);
 
   const handleRedo = useCallback(() => {
@@ -195,7 +194,7 @@ export default function App() {
       [activeDoc.id]: [...(u[activeDoc.id] ?? []), activeDoc],
     }));
     setDocuments((docs) => docs.map((d) => (d.id === activeDoc.id ? nextDoc : d)));
-    setStatusMessage('Redo applied');
+    setStatusMessage('Refazer aplicado');
   }, [activeDoc, redoStacks]);
 
   const openDocument = useCallback(
@@ -212,14 +211,14 @@ export default function App() {
       setActiveTab(doc.features.some((f) => f.kind.startsWith('sheet.')) ? 'SHEET METAL' : 'MODEL');
       recordRecent(doc);
       setTimeout(() => setFitCommandSeq((n) => n + 1), 60);
-      setStatusMessage(`Opened ${doc.name}`);
+      setStatusMessage(`Aberto: ${doc.name}`);
     },
     [recordRecent]
   );
 
   const handleNewDesign = useCallback(() => {
     const count = documents.length + 1;
-    const doc = createEmptyDesign(`Design ${count}`);
+    const doc = createEmptyDesign(`Projeto ${count}`);
     openDocument(doc);
   }, [documents.length, openDocument]);
 
@@ -264,7 +263,7 @@ export default function App() {
           return;
         }
       } catch {
-        setStatusMessage('Invalid JSON design file');
+        setStatusMessage('Arquivo JSON de projeto inválido');
       }
     } else if (lower.endsWith('.stl')) {
       const buf = await file.arrayBuffer();
@@ -290,17 +289,17 @@ export default function App() {
           baseDoc.rollbackIndex = baseDoc.features.length;
           openDocument(baseDoc);
         }
-        setStatusMessage(`Imported STL (${(positions.length / 9).toLocaleString()} triangles)`);
+        setStatusMessage(`STL importado (${(positions.length / 9).toLocaleString('pt-BR')} triângulos)`);
       }
     }
   };
 
-  // Start Sketch on Plane
+  // Iniciar Esboço no Plano
   const startSketchOnPlane = useCallback(
     (plane: PlaneName) => {
       if (!activeDoc) return;
       const skId = `sk_${Date.now()}`;
-      const skName = `Sketch${activeDoc.sketches.length + 1}`;
+      const skName = `Esboço${activeDoc.sketches.length + 1}`;
       const newSketch: SketchData = {
         id: skId,
         name: skName,
@@ -330,7 +329,7 @@ export default function App() {
         preset: plane === 'XY' ? 'top' : plane === 'XZ' ? 'front' : 'right',
         seq: Date.now(),
       });
-      setStatusMessage(`Editing ${skName} on ${plane} plane — click two points to draw`);
+      setStatusMessage(`Editando ${skName} no plano ${plane} — clique em dois pontos para desenhar`);
     },
     [activeDoc, activeTab, updateActiveDoc]
   );
@@ -373,7 +372,7 @@ export default function App() {
           setActiveSketchId(null);
           setActiveTab(returnTab);
           setCameraCommand({ preset: 'iso', seq: Date.now() });
-          setStatusMessage('Sketch finished — use Extrude or Revolve to create 3D geometry');
+          setStatusMessage('Esboço concluído — use Extrusão ou Revolução para gerar o sólido 3D');
           break;
         case 'sketch.cancel':
           if (activeSketch && activeSketch.entities.length === 0) {
@@ -386,7 +385,7 @@ export default function App() {
           }
           setActiveSketchId(null);
           setActiveTab(returnTab);
-          setStatusMessage('Sketch closed');
+          setStatusMessage('Esboço fechado');
           break;
         case 'solid.extrude':
           setActiveDialog({ type: 'solid.extrude' });
@@ -405,13 +404,13 @@ export default function App() {
             const f: CadFeature = {
               id: `f_${Date.now()}`,
               kind: 'solid.revolve',
-              name: `Revolve ${d.features.length + 1}`,
+              name: `Revolução ${d.features.length + 1}`,
               componentId: d.components[0]?.id ?? 'root',
               params: { angle: 360, sketchId: d.sketches[0]?.id },
             };
             return { ...d, features: [...d.features, f], rollbackIndex: d.features.length + 1 };
           });
-          setStatusMessage('Created Revolve feature');
+          setStatusMessage('Operação de Revolução criada');
           break;
         case 'solid.fillet':
           setActiveDialog({ type: 'solid.fillet' });
@@ -453,17 +452,17 @@ export default function App() {
               ...d.components,
               {
                 id: `comp_${Date.now()}`,
-                name: `Component${d.components.length + 1}`,
+                name: `Componente${d.components.length + 1}`,
                 visible: true,
                 material: 'Aluminum',
               },
             ],
           }));
-          setStatusMessage('Added new component to assembly');
+          setStatusMessage('Novo componente adicionado à montagem');
           break;
         case 'inspect.measure':
           setMeasureActive((v) => !v);
-          setStatusMessage('Measure tool active — click two points in the 3D viewport');
+          setStatusMessage('Ferramenta Medir ativa — clique em dois pontos na vista 3D');
           break;
         case 'inspect.section':
           updateActiveDoc((d) => ({ ...d, sectionEnabled: !d.sectionEnabled }), false);
@@ -479,9 +478,15 @@ export default function App() {
           break;
         case 'view.visual_style': {
           const order: VisualStyle[] = ['shaded_edges', 'shaded', 'wireframe', 'xray'];
+          const namesPt: Record<VisualStyle, string> = {
+            shaded_edges: 'Sombreado + Arestas',
+            shaded: 'Sombreado',
+            wireframe: 'Aramado',
+            xray: 'Raio-X',
+          };
           const next = order[(order.indexOf(activeDoc.visualStyle) + 1) % order.length];
           updateActiveDoc((d) => ({ ...d, visualStyle: next }), false);
-          setStatusMessage(`Visual style: ${next.replace('_', ' ')}`);
+          setStatusMessage(`Estilo visual: ${namesPt[next]}`);
           break;
         }
         case 'file.insert_mesh':
@@ -491,7 +496,7 @@ export default function App() {
           setActiveDialog({ type: 'export_mesh' });
           break;
         default:
-          setStatusMessage(`Command: ${cmdId}`);
+          setStatusMessage(`Comando: ${cmdId}`);
       }
     },
     [activeDoc, showHome, activeSketch, returnTab, updateActiveDoc]
@@ -637,7 +642,7 @@ export default function App() {
                   const b = evaluated.bodies.find((x) => x.id === id);
                   if (b) {
                     setStatusMessage(
-                      `${b.name} — ${b.material} • ${b.massGrams.toFixed(1)} g • ${(b.volumeMm3 / 1000).toFixed(2)} cm³`
+                      `${b.name} — ${getMaterialSpec(b.material).label} • ${b.massGrams.toFixed(1)} g • ${(b.volumeMm3 / 1000).toFixed(2)} cm³`
                     );
                   }
                 }
@@ -713,7 +718,7 @@ export default function App() {
                     s.id === activeSketch.id ? { ...s, entities: [...s.entities, ent] } : s
                   ),
                 }));
-                setStatusMessage(`Added ${ent.kind} to ${activeSketch.name}`);
+                setStatusMessage(`Entidade adicionada a ${activeSketch.name}`);
               }}
               onChangeVisualStyle={(style) =>
                 updateActiveDoc((d) => ({ ...d, visualStyle: style }), false)
@@ -746,7 +751,7 @@ export default function App() {
                 const feat: CadFeature = {
                   id: `f_${Date.now()}`,
                   kind: kind as CadFeature['kind'],
-                  name: params.body_name || kind.split('.').pop() || 'Feature',
+                  name: params.body_name || kind.split('.').pop() || 'Operação',
                   componentId: activeDoc.components[0]?.id ?? 'root',
                   params,
                 };
@@ -756,12 +761,12 @@ export default function App() {
                   rollbackIndex: d.rollbackIndex + 1,
                 }));
                 setActiveDialog(null);
-                setStatusMessage(`Created ${feat.name}`);
+                setStatusMessage(`Operação criada: ${feat.name}`);
               }}
               onUpdateParameters={(params: CadParameter[]) => {
                 updateActiveDoc((d) => ({ ...d, parameters: params }));
                 setActiveDialog(null);
-                setStatusMessage('Parameters updated — model rebuilt');
+                setStatusMessage('Parâmetros atualizados — modelo reconstruído');
               }}
               onAssignMaterial={(compId, material) => {
                 updateActiveDoc((d) => ({
@@ -771,14 +776,14 @@ export default function App() {
                   ),
                 }));
                 setActiveDialog(null);
-                setStatusMessage(`Assigned material ${material}`);
+                setStatusMessage(`Material atribuído: ${getMaterialSpec(material).label}`);
               }}
               onExportMesh={(fmt) => {
                 if (fmt === 'stl') exportSTL(activeDoc, evaluated, true);
                 if (fmt === 'obj') exportOBJ(activeDoc, evaluated);
                 if (fmt === 'glb') exportGLB(activeDoc, evaluated);
                 setActiveDialog(null);
-                setStatusMessage(`Exported ${activeDoc.name}.${fmt}`);
+                setStatusMessage(`Exportado: ${activeDoc.name}.${fmt}`);
               }}
             />
           </div>
@@ -801,7 +806,7 @@ export default function App() {
             }}
             onSelectFeature={(f) => {
               setSelectedFeatureId(f.id);
-              setStatusMessage(`Feature: ${f.name} (${f.kind}) — right-click to suppress`);
+              setStatusMessage(`Operação: ${f.name} — botão direito para suprimir`);
             }}
             onToggleSuppress={(fId) =>
               updateActiveDoc((d) => ({

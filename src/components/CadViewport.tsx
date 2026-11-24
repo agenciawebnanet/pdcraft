@@ -989,14 +989,14 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             }}
           >
             <span className="font-semibold" style={{ color: tokens.sketchInk }}>
-              Sketch Mode ({activeSketch.plane})
+              Modo Esboço ({activeSketch.plane})
             </span>
             <span className="text-[11px] opacity-85">
               {sketchTool === 'select'
-                ? 'Choose a sketch tool above'
+                ? 'Escolha uma ferramenta de esboço acima'
                 : sketchDraftStart
-                ? `Click second point (from ${sketchDraftStart[0]}, ${sketchDraftStart[1]})`
-                : `Click first point to place ${sketchTool}`}
+                ? `Clique no segundo ponto (de ${sketchDraftStart[0]}, ${sketchDraftStart[1]})`
+                : `Clique no primeiro ponto para desenhar`}
             </span>
             {cursorCoords && (
               <span className="cad-mono text-[11px] px-1.5 py-0.5 rounded" style={{ backgroundColor: tokens.panel }}>
@@ -1018,20 +1018,20 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             <div className="flex items-center justify-between gap-4">
               <span className="font-semibold flex items-center gap-1.5" style={{ color: tokens.accent }}>
                 <Ruler className="w-3.5 h-3.5" />
-                Measure Distance
+                Medir Distância
               </span>
               <button
                 type="button"
                 onClick={onToggleMeasure}
                 className="text-[10.5px] opacity-70 hover:opacity-100 cursor-pointer"
               >
-                Close
+                Fechar
               </button>
             </div>
             {measureResult ? (
               <div className="cad-mono text-[11px] space-y-0.5">
                 <div className="font-bold text-[12.5px]">
-                  Distance: {measureResult.distance.toFixed(2)} {doc.units}
+                  Distância: {measureResult.distance.toFixed(2)} {doc.units}
                 </div>
                 <div style={{ color: tokens.textDim }}>
                   ΔX {measureResult.dx.toFixed(2)} • ΔY {measureResult.dy.toFixed(2)} • ΔZ{' '}
@@ -1041,8 +1041,8 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             ) : (
               <div style={{ color: tokens.textDim }}>
                 {measurePoints.length === 0
-                  ? 'Click Point 1 on body or workplane'
-                  : 'Click Point 2 to measure distance'}
+                  ? 'Clique no Ponto 1 no corpo ou plano'
+                  : 'Clique no Ponto 2 para medir'}
               </div>
             )}
           </div>
@@ -1058,7 +1058,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             }}
           >
             <Scissors className="w-3.5 h-3.5" style={{ color: tokens.surfaceInk }} />
-            <span className="font-semibold">Section Z:</span>
+            <span className="font-semibold">Corte Z:</span>
             <input
               type="range"
               min={-10}
@@ -1082,7 +1082,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             }}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" style={{ color: tokens.formInk }} />
-            <span className="font-semibold">Drive Joint:</span>
+            <span className="font-semibold">Acionar Junta:</span>
             <input
               type="range"
               min={0}
@@ -1097,7 +1097,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
         )}
       </div>
 
-      {/* Top-Right ViewCube / Navigation Triad */}
+      {/* ViewCube / Tríade de Navegação Superior Direito */}
       <div
         className="absolute top-3 right-3 rounded-[8px] border p-2 shadow-md flex flex-col items-center gap-1.5 z-10"
         style={{
@@ -1111,17 +1111,17 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             type="button"
             onClick={() => onCameraPreset('iso')}
             className="p-1 rounded hover:opacity-100 opacity-75 cursor-pointer"
-            title="Home Isometric View"
+            title="Vista Inicial Isométrica"
             style={{ backgroundColor: tokens.hover }}
           >
             <Home className="w-3.5 h-3.5" />
           </button>
-          <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">View</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Vista</span>
           <button
             type="button"
             onClick={onFitView}
             className="p-1 rounded hover:opacity-100 opacity-75 cursor-pointer"
-            title="Fit Model to View"
+            title="Enquadrar Modelo na Vista"
             style={{ backgroundColor: tokens.hover }}
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -1129,16 +1129,16 @@ export const CadViewport: React.FC<CadViewportProps> = ({
         </div>
 
         <div className="grid grid-cols-3 gap-1 text-[10px] font-semibold">
-          <ViewCubeBtn label="L" title="Left View" onClick={() => onCameraPreset('left')} tokens={tokens} />
-          <ViewCubeBtn label="TOP" title="Top View" onClick={() => onCameraPreset('top')} tokens={tokens} />
-          <ViewCubeBtn label="R" title="Right View" onClick={() => onCameraPreset('right')} tokens={tokens} />
-          <ViewCubeBtn label="BACK" title="Back View" onClick={() => onCameraPreset('back')} tokens={tokens} />
-          <ViewCubeBtn label="FRONT" title="Front View" onClick={() => onCameraPreset('front')} tokens={tokens} active />
-          <ViewCubeBtn label="BOT" title="Bottom View" onClick={() => onCameraPreset('bottom')} tokens={tokens} />
+          <ViewCubeBtn label="ESQ" title="Vista Esquerda" onClick={() => onCameraPreset('left')} tokens={tokens} />
+          <ViewCubeBtn label="SUP" title="Vista Superior" onClick={() => onCameraPreset('top')} tokens={tokens} />
+          <ViewCubeBtn label="DIR" title="Vista Direita" onClick={() => onCameraPreset('right')} tokens={tokens} />
+          <ViewCubeBtn label="TRÁS" title="Vista Traseira" onClick={() => onCameraPreset('back')} tokens={tokens} />
+          <ViewCubeBtn label="FRENTE" title="Vista Frontal" onClick={() => onCameraPreset('front')} tokens={tokens} active />
+          <ViewCubeBtn label="INF" title="Vista Inferior" onClick={() => onCameraPreset('bottom')} tokens={tokens} />
         </div>
       </div>
 
-      {/* Bottom-Center Floating Navigation & Display Bar */}
+      {/* Barra Flutuante de Navegação e Exibição */}
       <div
         className="absolute bottom-3 left-1/2 -translate-x-1/2 h-[32px] px-2 rounded-[7px] border shadow-md flex items-center gap-1 z-10"
         style={{
@@ -1148,16 +1148,16 @@ export const CadViewport: React.FC<CadViewportProps> = ({
         }}
       >
         <NavIconBtn
-          title="Orbit (Left Drag)"
+          title="Orbitar (Botão Esquerdo)"
           onClick={() => onCameraPreset('iso')}
           tokens={tokens}
         >
           <Orbit className="w-3.5 h-3.5" />
         </NavIconBtn>
-        <NavIconBtn title="Pan (Right Drag / Middle Drag)" onClick={onFitView} tokens={tokens}>
+        <NavIconBtn title="Mover / Pan (Botão Direito ou Meio)" onClick={onFitView} tokens={tokens}>
           <Move className="w-3.5 h-3.5" />
         </NavIconBtn>
-        <NavIconBtn title="Fit All (F)" onClick={onFitView} tokens={tokens}>
+        <NavIconBtn title="Enquadrar Tudo (F)" onClick={onFitView} tokens={tokens}>
           <Maximize2 className="w-3.5 h-3.5" />
         </NavIconBtn>
 
@@ -1170,19 +1170,19 @@ export const CadViewport: React.FC<CadViewportProps> = ({
             onChange={(e) => onChangeVisualStyle(e.target.value as VisualStyle)}
             className="bg-transparent text-[11px] font-medium outline-none cursor-pointer"
             style={{ color: tokens.text }}
-            title="Visual Style"
+            title="Estilo Visual"
           >
-            <option value="shaded_edges" style={{ backgroundColor: tokens.panel }}>Shaded + Edges</option>
-            <option value="shaded" style={{ backgroundColor: tokens.panel }}>Shaded</option>
-            <option value="wireframe" style={{ backgroundColor: tokens.panel }}>Wireframe</option>
-            <option value="xray" style={{ backgroundColor: tokens.panel }}>X-Ray</option>
+            <option value="shaded_edges" style={{ backgroundColor: tokens.panel }}>Sombreado + Arestas</option>
+            <option value="shaded" style={{ backgroundColor: tokens.panel }}>Sombreado</option>
+            <option value="wireframe" style={{ backgroundColor: tokens.panel }}>Aramado</option>
+            <option value="xray" style={{ backgroundColor: tokens.panel }}>Raio-X</option>
           </select>
         </div>
 
         <span className="h-4 w-px mx-1" style={{ backgroundColor: tokens.border }} />
 
         <NavIconBtn
-          title="Toggle Workplane Grid"
+          title="Alternar Grade de Trabalho"
           active={doc.showGrid}
           onClick={onToggleGrid}
           tokens={tokens}
@@ -1190,7 +1190,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
           <Grid className="w-3.5 h-3.5" />
         </NavIconBtn>
         <NavIconBtn
-          title="Toggle Section Cut"
+          title="Alternar Corte de Seção"
           active={doc.sectionEnabled}
           onClick={onToggleSection}
           tokens={tokens}
@@ -1198,7 +1198,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
           <Scissors className="w-3.5 h-3.5" />
         </NavIconBtn>
         <NavIconBtn
-          title="Measure Distance"
+          title="Medir Distância"
           active={measureActive}
           onClick={onToggleMeasure}
           tokens={tokens}
@@ -1206,7 +1206,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
           <Ruler className="w-3.5 h-3.5" />
         </NavIconBtn>
         <NavIconBtn
-          title="Isometric Home"
+          title="Vista Isométrica Inicial"
           onClick={() => onCameraPreset('iso')}
           tokens={tokens}
         >

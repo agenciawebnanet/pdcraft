@@ -80,7 +80,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                 onClose();
               }
             }}
-            placeholder="Run command (e.g. Extrude, Fillet, Parameters, STL)…"
+            placeholder="Executar comando (ex: Extrusão, Filete, Parâmetros, STL)…"
             className="flex-1 bg-transparent text-[13px] outline-none"
           />
           <button type="button" onClick={onClose} className="opacity-60 hover:opacity-100 cursor-pointer">
@@ -91,7 +91,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         <div className="max-h-[320px] overflow-y-auto py-1">
           {filtered.length === 0 ? (
             <div className="px-4 py-6 text-center text-[12px]" style={{ color: tokens.textDim }}>
-              No matching commands
+              Nenhum comando encontrado
             </div>
           ) : (
             filtered.map((cmd) => (
@@ -157,17 +157,17 @@ export const AboutModal: React.FC<{
         <div>
           <h2 className="text-[18px] font-bold">PD Craft</h2>
           <p className="text-[12px] mt-1" style={{ color: tokens.textDim }}>
-            Parametric 3D CAD studio in the browser
+            Estúdio CAD 3D paramétrico no navegador
           </p>
         </div>
         <div
           className="text-left text-[11.5px] rounded-[6px] border p-3 space-y-1"
           style={{ backgroundColor: tokens.panelHeader, borderColor: tokens.border }}
         >
-          <div>• Parametric sketches & feature timeline with rollback</div>
-          <div>• Expression-driven dimensions & physical materials</div>
-          <div>• Sheet metal flanges, hems & plastic enclosure tools</div>
-          <div>• STL, OBJ, glTF (.glb) & JSON project export</div>
+          <div>• Esboços paramétricos e linha do tempo com retrocesso</div>
+          <div>• Dimensões por expressões e materiais físicos</div>
+          <div>• Chapa metálica, dobras, bainhas e recursos plásticos</div>
+          <div>• Exportação STL, OBJ, glTF (.glb) e projeto JSON</div>
         </div>
         <button
           type="button"
@@ -175,7 +175,7 @@ export const AboutModal: React.FC<{
           className="h-[30px] px-5 rounded-[5px] text-[12px] font-semibold text-white cursor-pointer"
           style={{ backgroundColor: tokens.accent }}
         >
-          Close
+          Fechar
         </button>
       </div>
     </div>

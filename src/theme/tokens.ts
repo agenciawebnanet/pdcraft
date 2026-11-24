@@ -164,6 +164,7 @@ export const DARK_TOKENS: ThemeTokens = {
 
 export interface PhysicalMaterialSpec {
   name: string;
+  label: string;
   density: number; // g/cm³
   color: string;
   metalness: number;
@@ -173,23 +174,23 @@ export interface PhysicalMaterialSpec {
 }
 
 export const PHYSICAL_MATERIALS: PhysicalMaterialSpec[] = [
-  { name: 'Default', density: 1.29, color: '#b0bac6', metalness: 0.15, roughness: 0.45 },
-  { name: 'Steel', density: 7.85, color: '#9ea4ac', metalness: 0.88, roughness: 0.28 },
-  { name: 'Stainless Steel', density: 8.0, color: '#babfc6', metalness: 0.92, roughness: 0.22 },
-  { name: 'Aluminum', density: 2.7, color: '#ccd0d6', metalness: 0.86, roughness: 0.26 },
-  { name: 'Brass', density: 8.5, color: '#d0ac58', metalness: 0.9, roughness: 0.22 },
-  { name: 'Copper', density: 8.96, color: '#cc7a50', metalness: 0.92, roughness: 0.24 },
-  { name: 'Titanium', density: 4.43, color: '#96949e', metalness: 0.85, roughness: 0.32 },
-  { name: 'Cast Iron', density: 7.2, color: '#68686e', metalness: 0.65, roughness: 0.62 },
-  { name: 'ABS Plastic', density: 1.06, color: '#deded8', metalness: 0.0, roughness: 0.42, clearcoat: 0.2 },
-  { name: 'PLA', density: 1.24, color: '#6ea0de', metalness: 0.0, roughness: 0.45, clearcoat: 0.15 },
-  { name: 'PETG', density: 1.27, color: '#4f96d8', metalness: 0.0, roughness: 0.28, clearcoat: 0.45 },
-  { name: 'Nylon', density: 1.14, color: '#ece6d6', metalness: 0.0, roughness: 0.55 },
-  { name: 'Polycarbonate', density: 1.2, color: '#c4d8e8', metalness: 0.0, roughness: 0.16, clearcoat: 0.7, opacity: 0.78 },
-  { name: 'Oak', density: 0.75, color: '#be925c', metalness: 0.0, roughness: 0.78 },
-  { name: 'Glass', density: 2.5, color: '#aad0da', metalness: 0.05, roughness: 0.06, clearcoat: 1.0, opacity: 0.42 },
+  { name: 'Default', label: 'Padrão', density: 1.29, color: '#b0bac6', metalness: 0.15, roughness: 0.45 },
+  { name: 'Steel', label: 'Aço', density: 7.85, color: '#9ea4ac', metalness: 0.88, roughness: 0.28 },
+  { name: 'Stainless Steel', label: 'Aço Inoxidável', density: 8.0, color: '#babfc6', metalness: 0.92, roughness: 0.22 },
+  { name: 'Aluminum', label: 'Alumínio', density: 2.7, color: '#ccd0d6', metalness: 0.86, roughness: 0.26 },
+  { name: 'Brass', label: 'Latão', density: 8.5, color: '#d0ac58', metalness: 0.9, roughness: 0.22 },
+  { name: 'Copper', label: 'Cobre', density: 8.96, color: '#cc7a50', metalness: 0.92, roughness: 0.24 },
+  { name: 'Titanium', label: 'Titânio', density: 4.43, color: '#96949e', metalness: 0.85, roughness: 0.32 },
+  { name: 'Cast Iron', label: 'Ferro Fundido', density: 7.2, color: '#68686e', metalness: 0.65, roughness: 0.62 },
+  { name: 'ABS Plastic', label: 'Plástico ABS', density: 1.06, color: '#deded8', metalness: 0.0, roughness: 0.42, clearcoat: 0.2 },
+  { name: 'PLA', label: 'PLA', density: 1.24, color: '#6ea0de', metalness: 0.0, roughness: 0.45, clearcoat: 0.15 },
+  { name: 'PETG', label: 'PETG', density: 1.27, color: '#4f96d8', metalness: 0.0, roughness: 0.28, clearcoat: 0.45 },
+  { name: 'Nylon', label: 'Nylon', density: 1.14, color: '#ece6d6', metalness: 0.0, roughness: 0.55 },
+  { name: 'Polycarbonate', label: 'Policarbonato', density: 1.2, color: '#c4d8e8', metalness: 0.0, roughness: 0.16, clearcoat: 0.7, opacity: 0.78 },
+  { name: 'Oak', label: 'Carvalho', density: 0.75, color: '#be925c', metalness: 0.0, roughness: 0.78 },
+  { name: 'Glass', label: 'Vidro', density: 2.5, color: '#aad0da', metalness: 0.05, roughness: 0.06, clearcoat: 1.0, opacity: 0.42 },
 ];
 
 export function getMaterialSpec(name: string): PhysicalMaterialSpec {
-  return PHYSICAL_MATERIALS.find((m) => m.name === name) ?? PHYSICAL_MATERIALS[0];
+  return PHYSICAL_MATERIALS.find((m) => m.name === name || m.label === name) ?? PHYSICAL_MATERIALS[0];
 }

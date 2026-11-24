@@ -72,6 +72,18 @@ const DESIGN_TABS: RibbonTab[] = [
   'VIEW',
 ];
 
+const TAB_LABELS_PT: Record<RibbonTab, string> = {
+  MODEL: 'Modelo',
+  SKETCH: 'Esboço',
+  SURFACE: 'Superfície',
+  'SHEET METAL': 'Chapa Metálica',
+  ASSEMBLE: 'Montagem',
+  INSERT: 'Inserir',
+  INSPECT: 'Inspecionar',
+  MANAGE: 'Gerenciar',
+  VIEW: 'Visualizar',
+};
+
 export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
   tokens,
   activeTab,
@@ -104,32 +116,32 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'SKETCH':
         return [
           {
-            panel: 'CREATE',
+            panel: 'CRIAR',
             commands: [
               {
                 id: 'sketch.tool.line',
-                label: 'Line',
+                label: 'Linha',
                 icon: <PenTool className="w-4 h-4" />,
                 accent: tokens.sketchInk,
                 active: sketchTool === 'line',
               },
               {
                 id: 'sketch.tool.rectangle',
-                label: 'Rectangle',
+                label: 'Retângulo',
                 icon: <Square className="w-4 h-4" />,
                 accent: tokens.sketchInk,
                 active: sketchTool === 'rectangle',
               },
               {
                 id: 'sketch.tool.circle',
-                label: 'Circle',
+                label: 'Círculo',
                 icon: <Circle className="w-4 h-4" />,
                 accent: tokens.sketchInk,
                 active: sketchTool === 'circle',
               },
               {
                 id: 'sketch.tool.slot',
-                label: 'Slot',
+                label: 'Rasgo',
                 icon: <Layers className="w-4 h-4" />,
                 accent: tokens.sketchInk,
                 active: sketchTool === 'slot',
@@ -137,35 +149,35 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
             ],
           },
           {
-            panel: 'OPTIONS',
+            panel: 'OPÇÕES',
             commands: [
               {
                 id: 'sketch.toggle_construction',
-                label: 'Construction',
+                label: 'Construção',
                 icon: <Compass className="w-4 h-4" />,
                 accent: tokens.surfaceInk,
                 active: sketchConstruction,
               },
               {
                 id: 'sketch.undo_entity',
-                label: 'Undo Seg',
+                label: 'Desfazer Seg.',
                 icon: <RotateCw className="w-4 h-4 -scale-x-100" />,
               },
             ],
           },
           {
-            panel: 'FINISH SKETCH',
+            panel: 'CONCLUIR ESBOÇO',
             commands: [
               {
                 id: 'sketch.finish',
-                label: 'Finish Sketch',
+                label: 'Concluir',
                 icon: <Check className="w-4 h-4" />,
                 accent: tokens.sketchInk,
                 active: true,
               },
               {
                 id: 'sketch.cancel',
-                label: 'Cancel',
+                label: 'Cancelar',
                 icon: <X className="w-4 h-4" />,
                 accent: tokens.error,
               },
@@ -176,46 +188,46 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'MODEL':
         return [
           {
-            panel: 'SKETCH',
+            panel: 'ESBOÇO',
             commands: [
               {
                 id: 'sketch.create',
-                label: 'New Sketch',
+                label: 'Novo Esboço',
                 icon: <PenTool className="w-4 h-4" />,
                 accent: tokens.sketchInk,
               },
             ],
           },
           {
-            panel: 'CREATE',
+            panel: 'CRIAR',
             commands: [
-              { id: 'solid.extrude', label: 'Extrude', icon: <PlusSquare className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'solid.revolve', label: 'Revolve', icon: <RotateCw className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'solid.box', label: 'Box', icon: <Box className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'solid.cylinder', label: 'Cylinder', icon: <Cylinder className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'solid.sphere', label: 'Sphere', icon: <Circle className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'solid.hole', label: 'Hole', icon: <Circle className="w-4 h-4 stroke-dashed" />, accent: tokens.accent },
+              { id: 'solid.extrude', label: 'Extrusão', icon: <PlusSquare className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'solid.revolve', label: 'Revolução', icon: <RotateCw className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'solid.box', label: 'Caixa', icon: <Box className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'solid.cylinder', label: 'Cilindro', icon: <Cylinder className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'solid.sphere', label: 'Esfera', icon: <Circle className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'solid.hole', label: 'Furo', icon: <Circle className="w-4 h-4 stroke-dashed" />, accent: tokens.accent },
             ],
           },
           {
-            panel: 'MODIFY',
+            panel: 'MODIFICAR',
             commands: [
-              { id: 'solid.fillet', label: 'Fillet', icon: <Sparkles className="w-4 h-4" />, accent: tokens.surfaceInk },
-              { id: 'solid.chamfer', label: 'Chamfer', icon: <Triangle className="w-4 h-4" />, accent: tokens.surfaceInk },
-              { id: 'solid.shell', label: 'Shell', icon: <Layers className="w-4 h-4" />, accent: tokens.surfaceInk },
+              { id: 'solid.fillet', label: 'Filete', icon: <Sparkles className="w-4 h-4" />, accent: tokens.surfaceInk },
+              { id: 'solid.chamfer', label: 'Chanfro', icon: <Triangle className="w-4 h-4" />, accent: tokens.surfaceInk },
+              { id: 'solid.shell', label: 'Casca', icon: <Layers className="w-4 h-4" />, accent: tokens.surfaceInk },
             ],
           },
           {
-            panel: 'ARRANGE',
+            panel: 'ORGANIZAR',
             commands: [
-              { id: 'solid.pattern.circular', label: 'Circ. Pattern', icon: <Orbit className="w-4 h-4" /> },
-              { id: 'solid.pattern.rectangular', label: 'Rect. Pattern', icon: <Grid className="w-4 h-4" /> },
+              { id: 'solid.pattern.circular', label: 'Padrão Circ.', icon: <Orbit className="w-4 h-4" /> },
+              { id: 'solid.pattern.rectangular', label: 'Padrão Ret.', icon: <Grid className="w-4 h-4" /> },
             ],
           },
           {
-            panel: 'CONFIGURE',
+            panel: 'CONFIGURAR',
             commands: [
-              { id: 'parameters.change', label: 'Parameters', icon: <Sliders className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'parameters.change', label: 'Parâmetros', icon: <Sliders className="w-4 h-4" />, accent: tokens.accent },
               { id: 'material.assign', label: 'Material', icon: <Palette className="w-4 h-4" /> },
             ],
           },
@@ -224,23 +236,23 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'SURFACE':
         return [
           {
-            panel: 'SKETCH',
+            panel: 'ESBOÇO',
             commands: [
-              { id: 'sketch.create', label: 'New Sketch', icon: <PenTool className="w-4 h-4" />, accent: tokens.sketchInk },
+              { id: 'sketch.create', label: 'Novo Esboço', icon: <PenTool className="w-4 h-4" />, accent: tokens.sketchInk },
             ],
           },
           {
-            panel: 'CREATE',
+            panel: 'CRIAR',
             commands: [
-              { id: 'solid.extrude', label: 'Extrude', icon: <PlusSquare className="w-4 h-4" />, accent: tokens.surfaceInk },
-              { id: 'solid.revolve', label: 'Revolve', icon: <RotateCw className="w-4 h-4" />, accent: tokens.surfaceInk },
+              { id: 'solid.extrude', label: 'Extrusão', icon: <PlusSquare className="w-4 h-4" />, accent: tokens.surfaceInk },
+              { id: 'solid.revolve', label: 'Revolução', icon: <RotateCw className="w-4 h-4" />, accent: tokens.surfaceInk },
             ],
           },
           {
-            panel: 'MESH',
+            panel: 'MALHA',
             commands: [
-              { id: 'file.insert_mesh', label: 'Insert Mesh', icon: <Upload className="w-4 h-4" /> },
-              { id: 'file.save_mesh', label: 'Save As Mesh', icon: <Download className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'file.insert_mesh', label: 'Inserir Malha', icon: <Upload className="w-4 h-4" /> },
+              { id: 'file.save_mesh', label: 'Exportar Malha', icon: <Download className="w-4 h-4" />, accent: tokens.accent },
             ],
           },
         ];
@@ -248,29 +260,29 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'SHEET METAL':
         return [
           {
-            panel: 'SKETCH',
+            panel: 'ESBOÇO',
             commands: [
-              { id: 'sketch.create', label: 'New Sketch', icon: <PenTool className="w-4 h-4" />, accent: tokens.sketchInk },
+              { id: 'sketch.create', label: 'Novo Esboço', icon: <PenTool className="w-4 h-4" />, accent: tokens.sketchInk },
             ],
           },
           {
-            panel: 'CREATE',
+            panel: 'CRIAR',
             commands: [
-              { id: 'sheet.flange', label: 'Flange', icon: <Layers className="w-4 h-4" />, accent: tokens.sheetInk },
-              { id: 'sheet.hem', label: 'Hem', icon: <Copy className="w-4 h-4" />, accent: tokens.sheetInk },
+              { id: 'sheet.flange', label: 'Aba / Flange', icon: <Layers className="w-4 h-4" />, accent: tokens.sheetInk },
+              { id: 'sheet.hem', label: 'Bainha', icon: <Copy className="w-4 h-4" />, accent: tokens.sheetInk },
             ],
           },
           {
-            panel: 'MODIFY',
+            panel: 'MODIFICAR',
             commands: [
-              { id: 'solid.fillet', label: 'Corner Fillet', icon: <Sparkles className="w-4 h-4" /> },
-              { id: 'solid.hole', label: 'Punch Hole', icon: <Circle className="w-4 h-4" /> },
+              { id: 'solid.fillet', label: 'Filete Canto', icon: <Sparkles className="w-4 h-4" /> },
+              { id: 'solid.hole', label: 'Puncionar Furo', icon: <Circle className="w-4 h-4" /> },
             ],
           },
           {
-            panel: 'MANAGE',
+            panel: 'GERENCIAR',
             commands: [
-              { id: 'sheet.rules', label: 'Sheet Rules', icon: <Settings2 className="w-4 h-4" />, accent: tokens.sheetInk },
+              { id: 'sheet.rules', label: 'Regras Chapa', icon: <Settings2 className="w-4 h-4" />, accent: tokens.sheetInk },
             ],
           },
         ];
@@ -278,15 +290,15 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'ASSEMBLE':
         return [
           {
-            panel: 'COMPONENTS',
+            panel: 'COMPONENTES',
             commands: [
-              { id: 'component.create', label: 'New Comp.', icon: <FolderPlus className="w-4 h-4" />, accent: tokens.formInk },
+              { id: 'component.create', label: 'Novo Comp.', icon: <FolderPlus className="w-4 h-4" />, accent: tokens.formInk },
             ],
           },
           {
-            panel: 'MOTION',
+            panel: 'MOVIMENTO',
             commands: [
-              { id: 'joint.drive', label: 'Drive Joint', icon: <Move3d className="w-4 h-4" />, accent: tokens.formInk },
+              { id: 'joint.drive', label: 'Acionar Junta', icon: <Move3d className="w-4 h-4" />, accent: tokens.formInk },
             ],
           },
         ];
@@ -294,10 +306,10 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'INSERT':
         return [
           {
-            panel: 'FILES',
+            panel: 'ARQUIVOS',
             commands: [
-              { id: 'file.insert_mesh', label: 'Insert STL', icon: <Upload className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'file.save_mesh', label: 'Export Mesh', icon: <Download className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'file.insert_mesh', label: 'Inserir STL', icon: <Upload className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'file.save_mesh', label: 'Exportar Malha', icon: <Download className="w-4 h-4" />, accent: tokens.accent },
             ],
           },
         ];
@@ -305,29 +317,29 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'INSPECT':
         return [
           {
-            panel: 'MEASURE',
+            panel: 'MEDIR',
             commands: [
               {
                 id: 'inspect.measure',
-                label: 'Measure',
+                label: 'Medir',
                 icon: <Ruler className="w-4 h-4" />,
                 accent: tokens.accent,
                 active: measureActive,
               },
               {
                 id: 'component.properties',
-                label: 'Mass Props',
+                label: 'Prop. Massa',
                 icon: <Wrench className="w-4 h-4" />,
                 accent: tokens.accent,
               },
             ],
           },
           {
-            panel: 'SECTION',
+            panel: 'SEÇÃO',
             commands: [
               {
                 id: 'inspect.section',
-                label: 'Section Cut',
+                label: 'Corte Seção',
                 icon: <Scissors className="w-4 h-4" />,
                 accent: tokens.surfaceInk,
                 active: sectionActive,
@@ -339,22 +351,22 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'MANAGE':
         return [
           {
-            panel: 'PARAMETERS',
+            panel: 'PARÂMETROS',
             commands: [
-              { id: 'parameters.change', label: 'Parameters', icon: <Sliders className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'parameters.change', label: 'Parâmetros', icon: <Sliders className="w-4 h-4" />, accent: tokens.accent },
             ],
           },
           {
-            panel: 'MATERIALS',
+            panel: 'MATERIAIS',
             commands: [
               { id: 'material.assign', label: 'Material', icon: <Palette className="w-4 h-4" />, accent: tokens.accent },
             ],
           },
           {
-            panel: 'DESIGN',
+            panel: 'PROJETO',
             commands: [
-              { id: 'document.units', label: 'Units', icon: <Compass className="w-4 h-4" /> },
-              { id: 'component.properties', label: 'Properties', icon: <Eye className="w-4 h-4" /> },
+              { id: 'document.units', label: 'Unidades', icon: <Compass className="w-4 h-4" /> },
+              { id: 'component.properties', label: 'Propriedades', icon: <Eye className="w-4 h-4" /> },
             ],
           },
         ];
@@ -362,17 +374,17 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
       case 'VIEW':
         return [
           {
-            panel: 'VIEWS',
+            panel: 'VISTAS',
             commands: [
-              { id: 'view.fit', label: 'Fit View', icon: <Maximize2 className="w-4 h-4" />, accent: tokens.accent },
-              { id: 'view.home', label: 'Home Iso', icon: <Compass className="w-4 h-4" /> },
+              { id: 'view.fit', label: 'Ajustar Vista', icon: <Maximize2 className="w-4 h-4" />, accent: tokens.accent },
+              { id: 'view.home', label: 'Início Iso', icon: <Compass className="w-4 h-4" /> },
               {
                 id: 'view.grid',
-                label: 'Work Grid',
+                label: 'Grade',
                 icon: <Grid className="w-4 h-4" />,
                 active: showGrid,
               },
-              { id: 'view.visual_style', label: 'Visual Style', icon: <Eye className="w-4 h-4" /> },
+              { id: 'view.visual_style', label: 'Estilo Visual', icon: <Eye className="w-4 h-4" /> },
             ],
           },
         ];
@@ -390,7 +402,7 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
         color: tokens.text,
       }}
     >
-      {/* Tab Row */}
+      {/* Linha de Abas */}
       <div
         className="h-[28px] px-2 flex items-center justify-between border-b"
         style={{ borderColor: tokens.border }}
@@ -400,10 +412,7 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
             const isSelected = tab === activeTab;
             const tabAccent = getTabAccent(tab);
             const isContextual = tab === 'SKETCH' || tab === 'SHEET METAL';
-            const label =
-              tab === 'SHEET METAL'
-                ? 'Sheet Metal'
-                : tab.charAt(0) + tab.slice(1).toLowerCase();
+            const label = TAB_LABELS_PT[tab];
 
             return (
               <button
@@ -447,13 +456,13 @@ export const RibbonToolbar: React.FC<RibbonToolbarProps> = ({
           onClick={onToggleCollapse}
           className="px-2 py-0.5 text-[10.5px] rounded hover:opacity-100 opacity-65 cursor-pointer"
           style={{ color: tokens.textDim }}
-          title={tabsCollapsed ? 'Expand Ribbon' : 'Collapse Ribbon'}
+          title={tabsCollapsed ? 'Expandir Faixa de Ferramentas' : 'Recolher Faixa de Ferramentas'}
         >
-          {tabsCollapsed ? '▾ Ribbon' : '▴'}
+          {tabsCollapsed ? '▾ Faixa' : '▴'}
         </button>
       </div>
 
-      {/* Ribbon Tool Panels */}
+      {/* Painéis de Ferramentas */}
       {!tabsCollapsed && (
         <div className="h-[62px] px-2.5 flex items-stretch gap-1 overflow-x-auto no-scrollbar">
           {sections.map((section, idx) => (

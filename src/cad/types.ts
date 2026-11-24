@@ -196,7 +196,7 @@ export interface SampleDesignMeta {
   id: string;
   name: string;
   about: string;
-  category: 'Part' | 'Sheet Metal' | 'Assembly' | 'Plastic';
+  category: 'Peça' | 'Chapa Metálica' | 'Montagem' | 'Plástico';
   accentColor: string;
   build: () => DesignDocument;
 }

@@ -88,7 +88,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
         color: tokens.appBarText,
       }}
     >
-      {/* Left: Brand + File Menu + Undo/Redo */}
+      {/* Esquerda: Marca + Menu Arquivo + Desfazer/Refazer */}
       <div className="flex items-center gap-1 min-w-0">
         <div ref={menuRef} className="relative flex items-center">
           <button
@@ -98,7 +98,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             style={{
               backgroundColor: fileMenuOpen ? tokens.appBarHover : 'transparent',
             }}
-            title="File Menu"
+            title="Menu Arquivo"
           >
             <PDCraftLogo size={17} />
             <span>PD Craft</span>
@@ -107,7 +107,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
           {fileMenuOpen && (
             <div
-              className="absolute left-0 top-[33px] w-56 rounded-[6px] shadow-xl border py-1 z-50 text-[12px]"
+              className="absolute left-0 top-[33px] w-60 rounded-[6px] shadow-xl border py-1 z-50 text-[12px]"
               style={{
                 backgroundColor: tokens.panel,
                 borderColor: tokens.border,
@@ -116,7 +116,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             >
               <MenuItem
                 icon={<FilePlus className="w-3.5 h-3.5" />}
-                label="New Design"
+                label="Novo Projeto"
                 shortcut="Ctrl+N"
                 tokens={tokens}
                 onClick={() => {
@@ -126,7 +126,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               />
               <MenuItem
                 icon={<FolderOpen className="w-3.5 h-3.5" />}
-                label="Open (.pdcraft / .stl)…"
+                label="Abrir (.pdcraft / .stl)…"
                 shortcut="Ctrl+O"
                 tokens={tokens}
                 onClick={() => {
@@ -137,7 +137,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               <div className="my-1 border-t" style={{ borderColor: tokens.border }} />
               <MenuItem
                 icon={<Save className="w-3.5 h-3.5" />}
-                label="Save Project (.pdcraft.json)"
+                label="Salvar Projeto (.pdcraft.json)"
                 shortcut="Ctrl+S"
                 disabled={!hasActiveDesign}
                 tokens={tokens}
@@ -148,11 +148,11 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               />
               <div className="my-1 border-t" style={{ borderColor: tokens.border }} />
               <div className="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider opacity-60">
-                Export Mesh
+                Exportar Malha
               </div>
               <MenuItem
                 icon={<Download className="w-3.5 h-3.5" />}
-                label="Export STL…"
+                label="Exportar STL…"
                 disabled={!hasActiveDesign}
                 tokens={tokens}
                 onClick={() => {
@@ -162,7 +162,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               />
               <MenuItem
                 icon={<Download className="w-3.5 h-3.5" />}
-                label="Export OBJ…"
+                label="Exportar OBJ…"
                 disabled={!hasActiveDesign}
                 tokens={tokens}
                 onClick={() => {
@@ -172,7 +172,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               />
               <MenuItem
                 icon={<Download className="w-3.5 h-3.5" />}
-                label="Export glTF (.glb)…"
+                label="Exportar glTF (.glb)…"
                 disabled={!hasActiveDesign}
                 tokens={tokens}
                 onClick={() => {
@@ -183,7 +183,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
               <div className="my-1 border-t" style={{ borderColor: tokens.border }} />
               <MenuItem
                 icon={<Info className="w-3.5 h-3.5" />}
-                label="About PD Craft"
+                label="Sobre o PD Craft"
                 tokens={tokens}
                 onClick={() => {
                   setFileMenuOpen(false);
@@ -199,14 +199,14 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           style={{ backgroundColor: tokens.appBarSeparator }}
         />
 
-        {/* Undo / Redo */}
+        {/* Desfazer / Refazer */}
         <button
           type="button"
           disabled={!canUndo || !hasActiveDesign}
           onClick={onUndo}
           className="h-[26px] w-[26px] flex items-center justify-center rounded-[5px] transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
           style={{ backgroundColor: 'transparent' }}
-          title="Undo (Ctrl+Z)"
+          title="Desfazer (Ctrl+Z)"
         >
           <Undo2 className="w-3.5 h-3.5" />
         </button>
@@ -216,7 +216,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           onClick={onRedo}
           className="h-[26px] w-[26px] flex items-center justify-center rounded-[5px] transition-colors disabled:opacity-30 cursor-pointer disabled:cursor-default"
           style={{ backgroundColor: 'transparent' }}
-          title="Redo (Ctrl+Y)"
+          title="Refazer (Ctrl+Y)"
         >
           <Redo2 className="w-3.5 h-3.5" />
         </button>
@@ -226,7 +226,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           style={{ backgroundColor: tokens.appBarSeparator }}
         />
 
-        {/* Home Tab + Document Tabs */}
+        {/* Aba Início + Abas de Projetos */}
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           <button
             type="button"
@@ -235,7 +235,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             style={{
               backgroundColor: showHome ? tokens.appBarTabActive : 'transparent',
             }}
-            title="Home — New, Recent & Sample Designs"
+            title="Início — Projetos Novos, Recentes e Exemplos"
           >
             <Home className="w-3.5 h-3.5" />
           </button>
@@ -263,7 +263,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
                     onCloseDoc(doc.id);
                   }}
                   className="w-4 h-4 rounded flex items-center justify-center opacity-55 hover:opacity-100 hover:bg-white/15 cursor-pointer"
-                  title="Close Design"
+                  title="Fechar Projeto"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -275,14 +275,14 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             type="button"
             onClick={onNewDesign}
             className="h-[24px] w-[24px] rounded-[5px] flex items-center justify-center text-[14px] opacity-70 hover:opacity-100 hover:bg-white/10 cursor-pointer"
-            title="New Design Tab"
+            title="Nova Aba de Projeto"
           >
             +
           </button>
         </div>
       </div>
 
-      {/* Right: Command Search + Theme Toggle */}
+      {/* Direita: Busca de Comandos + Alternar Tema */}
       <div className="flex items-center gap-1.5 shrink-0">
         {hasActiveDesign && (
           <button
@@ -290,10 +290,10 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             onClick={onOpenCommandPalette}
             className="h-[25px] px-2.5 rounded-[5px] flex items-center gap-2 text-[11.5px] opacity-85 hover:opacity-100 transition-colors cursor-pointer"
             style={{ backgroundColor: 'rgba(255,255,255,0.09)' }}
-            title="Command Search (Ctrl+K)"
+            title="Buscar Comandos (Ctrl+K)"
           >
             <Search className="w-3 h-3 opacity-80" />
-            <span className="hidden sm:inline">Search commands…</span>
+            <span className="hidden sm:inline">Buscar comandos…</span>
             <kbd className="text-[10px] opacity-65 px-1 py-0.5 rounded bg-black/25">Ctrl+K</kbd>
           </button>
         )}
@@ -302,7 +302,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           type="button"
           onClick={onToggleTheme}
           className="h-[26px] w-[26px] rounded-[5px] flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
-          title={tokens.mode === 'light' ? 'Switch to Dark Theme' : 'Switch to Light Theme'}
+          title={tokens.mode === 'light' ? 'Alternar para Tema Escuro' : 'Alternar para Tema Claro'}
         >
           {tokens.mode === 'light' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
         </button>

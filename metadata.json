@@ -1,6 +1,6 @@
 {
   "name": "PD Craft",
-  "description": "Parametric 3D CAD studio in the browser — sketches, solid modeling, sheet metal, assemblies, and STL/OBJ/glTF export.",
+  "description": "Estúdio CAD 3D paramétrico no navegador — esboços, modelagem sólida, chapa metálica, montagens e exportação STL/OBJ/glTF.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

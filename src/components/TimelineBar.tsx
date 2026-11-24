@@ -71,10 +71,10 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
         color: tokens.text,
       }}
     >
-      {/* Transport Controls */}
+      {/* Controles de Transporte */}
       <div className="flex items-center gap-0.5 shrink-0 pr-2 border-r" style={{ borderColor: tokens.border }}>
         <TransportBtn
-          title="Roll to Beginning"
+          title="Voltar ao Início"
           disabled={rollbackIndex <= 0}
           onClick={() => onSetRollback(0)}
           tokens={tokens}
@@ -82,7 +82,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
           <ChevronFirst className="w-3.5 h-3.5" />
         </TransportBtn>
         <TransportBtn
-          title="Step Backward"
+          title="Voltar um Passo"
           disabled={rollbackIndex <= 0}
           onClick={() => onSetRollback(Math.max(0, rollbackIndex - 1))}
           tokens={tokens}
@@ -90,7 +90,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
           <ChevronLeft className="w-3.5 h-3.5" />
         </TransportBtn>
         <TransportBtn
-          title={isPlaying ? 'Pause History Playback' : 'Play Feature History'}
+          title={isPlaying ? 'Pausar Reprodução' : 'Reproduzir Histórico'}
           disabled={features.length === 0}
           onClick={onTogglePlay}
           tokens={tokens}
@@ -98,7 +98,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
           {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
         </TransportBtn>
         <TransportBtn
-          title="Step Forward"
+          title="Avançar um Passo"
           disabled={rollbackIndex >= features.length}
           onClick={() => onSetRollback(Math.min(features.length, rollbackIndex + 1))}
           tokens={tokens}
@@ -106,7 +106,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
           <ChevronRight className="w-3.5 h-3.5" />
         </TransportBtn>
         <TransportBtn
-          title="Roll to End"
+          title="Ir para o Final"
           disabled={rollbackIndex >= features.length}
           onClick={() => onSetRollback(features.length)}
           tokens={tokens}
@@ -115,13 +115,13 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
         </TransportBtn>
       </div>
 
-      {/* Feature Chips + Rollback Marker */}
+      {/* Operações + Marcador de Retrocesso */}
       <div className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
         {rollbackIndex === 0 && <RollbackMarker tokens={tokens} />}
 
         {features.length === 0 ? (
           <span className="text-[11px] px-2" style={{ color: tokens.textDim }}>
-            Timeline empty — create a sketch or solid feature
+            Linha do tempo vazia — crie um esboço ou operação sólida
           </span>
         ) : (
           features.map((feat, idx) => {
@@ -144,10 +144,10 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
                     opacity: rolledBack || feat.suppressed ? 0.42 : 1,
                     textDecoration: feat.suppressed ? 'line-through' : 'none',
                   }}
-                  title={`${feat.name} (${feat.kind}) — Click to inspect, Right-click to suppress/unsuppress`}
+                  title={`${feat.name} — Clique para inspecionar, Botão direito para suprimir/reativar`}
                 >
                   <span style={{ color }}>{icon}</span>
-                  <span className="font-medium max-w-[110px] truncate">{feat.name}</span>
+                  <span className="font-medium max-w-[120px] truncate">{feat.name}</span>
                   <button
                     type="button"
                     onClick={(e) => {
@@ -156,7 +156,7 @@ export const TimelineBar: React.FC<TimelineBarProps> = ({
                     }}
                     className="opacity-0 group-hover:opacity-75 hover:!opacity-100 text-[9.5px] px-1 rounded cursor-pointer"
                     style={{ backgroundColor: tokens.hover }}
-                    title="Roll history marker to after this feature"
+                    title="Mover marcador de histórico para após esta operação"
                   >
                     |
                   </button>
@@ -180,7 +180,7 @@ const RollbackMarker: React.FC<{ tokens: ThemeTokens }> = ({ tokens }) => (
   <div
     className="w-[3px] h-[24px] rounded-full shrink-0 mx-0.5"
     style={{ backgroundColor: tokens.accent }}
-    title="History Rollback Marker"
+    title="Marcador de Retrocesso do Histórico"
   />
 );
 

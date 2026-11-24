@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, X } from 'lucide-react';
-import { PHYSICAL_MATERIALS, ThemeTokens } from '../theme/tokens';
+import { getMaterialSpec, PHYSICAL_MATERIALS, ThemeTokens } from '../theme/tokens';
 import {
   CadParameter,
   DesignDocument,
@@ -54,7 +54,6 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
   onAssignMaterial,
   onExportMesh,
 }) => {
-  // Feature form states
   const [plane, setPlane] = useState<PlaneName>('XY');
   const [sketchId, setSketchId] = useState<string>(doc.sketches[doc.sketches.length - 1]?.id ?? '');
   const [distance, setDistance] = useState('15 mm');
@@ -82,35 +81,33 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
   const [hemLen, setHemLen] = useState('8 mm');
   const [exportFmt, setExportFmt] = useState<'stl' | 'obj' | 'glb'>('stl');
 
-  // Parameters editor state
   const [paramDraft, setParamDraft] = useState<CadParameter[]>(doc.parameters);
   const [newParamName, setNewParamName] = useState('');
   const [newParamExpr, setNewParamExpr] = useState('10 mm');
 
-  // Material assignment
   const [targetCompId, setTargetCompId] = useState(doc.components[0]?.id ?? 'root');
   const [selectedMat, setSelectedMat] = useState(doc.components[0]?.material ?? 'Default');
 
   if (!kind) return null;
 
   const titleMap: Record<NonNullable<ActiveDialogKind>['type'], string> = {
-    'sketch.create': 'New Sketch',
-    'solid.extrude': 'Extrude',
-    'solid.box': 'Create Box',
-    'solid.cylinder': 'Create Cylinder',
-    'solid.sphere': 'Create Sphere',
-    'solid.fillet': 'Fillet Edges',
-    'solid.chamfer': 'Chamfer Edges',
-    'solid.shell': 'Shell Body',
-    'solid.hole': 'Hole',
-    'solid.pattern.circular': 'Circular Pattern',
-    'solid.pattern.rectangular': 'Rectangular Pattern',
-    'sheet.flange': 'Sheet Metal Flange',
-    'sheet.hem': 'Sheet Metal Hem',
-    parameters: 'Parameters',
-    material: 'Physical Material',
-    properties: 'Mass Properties',
-    export_mesh: 'Save As Mesh',
+    'sketch.create': 'Novo Esboço',
+    'solid.extrude': 'Extrusão',
+    'solid.box': 'Criar Caixa',
+    'solid.cylinder': 'Criar Cilindro',
+    'solid.sphere': 'Criar Esfera',
+    'solid.fillet': 'Filete nas Arestas',
+    'solid.chamfer': 'Chanfro nas Arestas',
+    'solid.shell': 'Casca (Shell)',
+    'solid.hole': 'Furo',
+    'solid.pattern.circular': 'Padrão Circular',
+    'solid.pattern.rectangular': 'Padrão Retangular',
+    'sheet.flange': 'Aba em Chapa Metálica',
+    'sheet.hem': 'Bainha em Chapa Metálica',
+    parameters: 'Parâmetros',
+    material: 'Material Físico',
+    properties: 'Propriedades de Massa',
+    export_mesh: 'Exportar Malha',
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -123,13 +120,13 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
         onCreateFeature('solid.extrude', { sketchId, distance, operation });
         break;
       case 'solid.box':
-        onCreateFeature('solid.box', { length: boxL, width: boxW, height: boxH, body_name: 'Box' });
+        onCreateFeature('solid.box', { length: boxL, width: boxW, height: boxH, body_name: 'Caixa' });
         break;
       case 'solid.cylinder':
-        onCreateFeature('solid.cylinder', { radius: cylR, height: cylH, body_name: 'Cylinder', operation: 'new' });
+        onCreateFeature('solid.cylinder', { radius: cylR, height: cylH, body_name: 'Cilindro', operation: 'new' });
         break;
       case 'solid.sphere':
-        onCreateFeature('solid.sphere', { radius: sphR, body_name: 'Sphere' });
+        onCreateFeature('solid.sphere', { radius: sphR, body_name: 'Esfera' });
         break;
       case 'solid.fillet':
         onCreateFeature('solid.fillet', { radius: filletR });
@@ -184,7 +181,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
         color: tokens.text,
       }}
     >
-      {/* Header */}
+      {/* Cabeçalho */}
       <div
         className="h-[40px] px-3 border-b flex items-center justify-between shrink-0"
         style={{ backgroundColor: tokens.panelHeader, borderColor: tokens.dialogRule }}
@@ -200,12 +197,12 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
         </button>
       </div>
 
-      {/* Form Body */}
+      {/* Formulário */}
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-3.5 space-y-3 text-[12px]">
           {kind.type === 'sketch.create' && (
             <>
-              <FieldLabel label="Plane" tokens={tokens}>
+              <FieldLabel label="Plano" tokens={tokens}>
                 <div className="grid grid-cols-3 gap-1.5">
                   {(['XY', 'XZ', 'YZ'] as PlaneName[]).map((pl) => (
                     <button
@@ -225,14 +222,14 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                 </div>
               </FieldLabel>
               <p className="text-[11px]" style={{ color: tokens.textDim }}>
-                Select a base plane to open the 2D Sketch toolbar and draw lines, rectangles, circles, or slots.
+                Selecione um plano base para abrir a barra de Esboço 2D e desenhar linhas, retângulos, círculos ou rasgos.
               </p>
             </>
           )}
 
           {kind.type === 'solid.extrude' && (
             <>
-              <FieldLabel label="Profile Sketch" tokens={tokens}>
+              <FieldLabel label="Esboço de Perfil" tokens={tokens}>
                 <select
                   value={sketchId}
                   onChange={(e) => setSketchId(e.target.value)}
@@ -243,7 +240,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                     color: tokens.text,
                   }}
                 >
-                  {doc.sketches.length === 0 && <option value="">No sketches available</option>}
+                  {doc.sketches.length === 0 && <option value="">Nenhum esboço disponível</option>}
                   {doc.sketches.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name} ({s.plane})
@@ -251,8 +248,8 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                   ))}
                 </select>
               </FieldLabel>
-              <TextField label="Distance" value={distance} onChange={setDistance} tokens={tokens} />
-              <FieldLabel label="Operation" tokens={tokens}>
+              <TextField label="Distância" value={distance} onChange={setDistance} tokens={tokens} />
+              <FieldLabel label="Operação" tokens={tokens}>
                 <select
                   value={operation}
                   onChange={(e) => setOperation(e.target.value as FeatureOperation)}
@@ -263,9 +260,9 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                     color: tokens.text,
                   }}
                 >
-                  <option value="new">New Body</option>
-                  <option value="join">Join</option>
-                  <option value="cut">Cut</option>
+                  <option value="new">Novo Corpo</option>
+                  <option value="join">Unir</option>
+                  <option value="cut">Cortar</option>
                 </select>
               </FieldLabel>
             </>
@@ -273,74 +270,74 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
 
           {kind.type === 'solid.box' && (
             <>
-              <TextField label="Length (X)" value={boxL} onChange={setBoxL} tokens={tokens} />
-              <TextField label="Width (Y)" value={boxW} onChange={setBoxW} tokens={tokens} />
-              <TextField label="Height (Z)" value={boxH} onChange={setBoxH} tokens={tokens} />
+              <TextField label="Comprimento (X)" value={boxL} onChange={setBoxL} tokens={tokens} />
+              <TextField label="Largura (Y)" value={boxW} onChange={setBoxW} tokens={tokens} />
+              <TextField label="Altura (Z)" value={boxH} onChange={setBoxH} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'solid.cylinder' && (
             <>
-              <TextField label="Radius" value={cylR} onChange={setCylR} tokens={tokens} />
-              <TextField label="Height" value={cylH} onChange={setCylH} tokens={tokens} />
+              <TextField label="Raio" value={cylR} onChange={setCylR} tokens={tokens} />
+              <TextField label="Altura" value={cylH} onChange={setCylH} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'solid.sphere' && (
-            <TextField label="Radius" value={sphR} onChange={setSphR} tokens={tokens} />
+            <TextField label="Raio" value={sphR} onChange={setSphR} tokens={tokens} />
           )}
 
           {kind.type === 'solid.fillet' && (
-            <TextField label="Radius" value={filletR} onChange={setFilletR} tokens={tokens} />
+            <TextField label="Raio" value={filletR} onChange={setFilletR} tokens={tokens} />
           )}
 
           {kind.type === 'solid.chamfer' && (
-            <TextField label="Distance" value={chamferD} onChange={setChamferD} tokens={tokens} />
+            <TextField label="Distância" value={chamferD} onChange={setChamferD} tokens={tokens} />
           )}
 
           {kind.type === 'solid.shell' && (
-            <TextField label="Wall Thickness" value={shellT} onChange={setShellT} tokens={tokens} />
+            <TextField label="Espessura da Parede" value={shellT} onChange={setShellT} tokens={tokens} />
           )}
 
           {kind.type === 'solid.hole' && (
             <>
-              <TextField label="Diameter" value={holeD} onChange={setHoleD} tokens={tokens} />
-              <TextField label="Center X" value={holeX} onChange={setHoleX} tokens={tokens} />
-              <TextField label="Center Y" value={holeY} onChange={setHoleY} tokens={tokens} />
+              <TextField label="Diâmetro" value={holeD} onChange={setHoleD} tokens={tokens} />
+              <TextField label="Centro X" value={holeX} onChange={setHoleX} tokens={tokens} />
+              <TextField label="Centro Y" value={holeY} onChange={setHoleY} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'solid.pattern.circular' && (
             <>
-              <TextField label="Count" value={patCount} onChange={setPatCount} tokens={tokens} />
-              <TextField label="Bolt Circle Ø" value={patPcd} onChange={setPatPcd} tokens={tokens} />
+              <TextField label="Quantidade" value={patCount} onChange={setPatCount} tokens={tokens} />
+              <TextField label="Diâmetro Primitivo (PCD)" value={patPcd} onChange={setPatPcd} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'solid.pattern.rectangular' && (
             <>
-              <TextField label="Rows" value={patRows} onChange={setPatRows} tokens={tokens} />
-              <TextField label="Columns" value={patCols} onChange={setPatCols} tokens={tokens} />
-              <TextField label="Row Pitch" value={patRowPitch} onChange={setPatRowPitch} tokens={tokens} />
-              <TextField label="Col Pitch" value={patColPitch} onChange={setPatColPitch} tokens={tokens} />
+              <TextField label="Linhas" value={patRows} onChange={setPatRows} tokens={tokens} />
+              <TextField label="Colunas" value={patCols} onChange={setPatCols} tokens={tokens} />
+              <TextField label="Passo Linhas" value={patRowPitch} onChange={setPatRowPitch} tokens={tokens} />
+              <TextField label="Passo Colunas" value={patColPitch} onChange={setPatColPitch} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'sheet.flange' && (
             <>
-              <TextField label="Height" value={flangeH} onChange={setFlangeH} tokens={tokens} />
-              <TextField label="Bend Angle" value={flangeAng} onChange={setFlangeAng} tokens={tokens} />
+              <TextField label="Altura" value={flangeH} onChange={setFlangeH} tokens={tokens} />
+              <TextField label="Ângulo de Dobra" value={flangeAng} onChange={setFlangeAng} tokens={tokens} />
             </>
           )}
 
           {kind.type === 'sheet.hem' && (
-            <TextField label="Hem Length" value={hemLen} onChange={setHemLen} tokens={tokens} />
+            <TextField label="Comprimento da Bainha" value={hemLen} onChange={setHemLen} tokens={tokens} />
           )}
 
           {kind.type === 'parameters' && (
             <div className="space-y-2.5">
               <p className="text-[11px]" style={{ color: tokens.textDim }}>
-                Edit expressions (supports <code className="cad-mono">mm</code>, <code className="cad-mono">deg</code>, and math like <code className="cad-mono">thickness + 10</code>).
+                Edite expressões (suporta <code className="cad-mono">mm</code>, <code className="cad-mono">deg</code> e fórmulas como <code className="cad-mono">thickness + 10</code>).
               </p>
 
               <div className="space-y-1.5">
@@ -362,7 +359,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                             type="button"
                             onClick={() => setParamDraft((prev) => prev.filter((_, i) => i !== idx))}
                             className="opacity-55 hover:opacity-100 cursor-pointer"
-                            title="Delete Parameter"
+                            title="Excluir Parâmetro"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -389,11 +386,11 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
               </div>
 
               <div className="pt-2 border-t space-y-1.5" style={{ borderColor: tokens.border }}>
-                <div className="text-[11px] font-semibold">Add Parameter</div>
+                <div className="text-[11px] font-semibold">Adicionar Parâmetro</div>
                 <div className="flex gap-1.5">
                   <input
                     type="text"
-                    placeholder="name"
+                    placeholder="nome"
                     value={newParamName}
                     onChange={(e) => setNewParamName(e.target.value)}
                     className="w-1/2 h-[26px] px-2 rounded border text-[11.5px] cad-mono outline-none"
@@ -431,7 +428,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                   style={{ borderColor: tokens.controlBorder, backgroundColor: tokens.panelHeader }}
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Add Parameter
+                  Adicionar Parâmetro
                 </button>
               </div>
             </div>
@@ -439,7 +436,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
 
           {kind.type === 'material' && (
             <div className="space-y-3">
-              <FieldLabel label="Component" tokens={tokens}>
+              <FieldLabel label="Componente" tokens={tokens}>
                 <select
                   value={targetCompId}
                   onChange={(e) => {
@@ -482,7 +479,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                           className="w-3.5 h-3.5 rounded-sm border"
                           style={{ backgroundColor: m.color, borderColor: tokens.border }}
                         />
-                        <span className="font-medium">{m.name}</span>
+                        <span className="font-medium">{m.label}</span>
                       </span>
                       <span className="cad-mono text-[10.5px]" style={{ color: tokens.textDim }}>
                         {m.density.toFixed(2)} g/cm³
@@ -500,10 +497,10 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                 className="p-2.5 rounded-[6px] border space-y-1.5"
                 style={{ backgroundColor: tokens.panel, borderColor: tokens.border }}
               >
-                <div className="font-semibold text-[12px]">Assembly Summary</div>
-                <PropRow label="Total Volume" value={`${(evaluated.totalVolumeMm3 / 1000).toFixed(2)} cm³`} tokens={tokens} />
-                <PropRow label="Total Area" value={`${(evaluated.totalAreaMm2 / 100).toFixed(2)} cm²`} tokens={tokens} />
-                <PropRow label="Total Mass" value={`${evaluated.totalMassGrams.toFixed(2)} g`} tokens={tokens} />
+                <div className="font-semibold text-[12px]">Resumo da Montagem</div>
+                <PropRow label="Volume Total" value={`${(evaluated.totalVolumeMm3 / 1000).toFixed(2)} cm³`} tokens={tokens} />
+                <PropRow label="Área Total" value={`${(evaluated.totalAreaMm2 / 100).toFixed(2)} cm²`} tokens={tokens} />
+                <PropRow label="Massa Total" value={`${evaluated.totalMassGrams.toFixed(2)} g`} tokens={tokens} />
               </div>
 
               {evaluated.bodies.map((b) => (
@@ -513,15 +510,15 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                   style={{ backgroundColor: tokens.panel, borderColor: tokens.border }}
                 >
                   <div className="font-semibold">{b.name}</div>
-                  <PropRow label="Material" value={b.material} tokens={tokens} />
-                  <PropRow label="Mass" value={`${b.massGrams.toFixed(2)} g`} tokens={tokens} />
+                  <PropRow label="Material" value={getMaterialSpec(b.material).label} tokens={tokens} />
+                  <PropRow label="Massa" value={`${b.massGrams.toFixed(2)} g`} tokens={tokens} />
                   <PropRow label="Volume" value={`${(b.volumeMm3 / 1000).toFixed(2)} cm³`} tokens={tokens} />
                   <PropRow
-                    label="Bounds"
+                    label="Dimensões"
                     value={`${(b.bboxMax[0] - b.bboxMin[0]).toFixed(1)} × ${(b.bboxMax[1] - b.bboxMin[1]).toFixed(1)} × ${(b.bboxMax[2] - b.bboxMin[2]).toFixed(1)} mm`}
                     tokens={tokens}
                   />
-                  <PropRow label="Triangles" value={`${b.triangleCount}`} tokens={tokens} />
+                  <PropRow label="Triângulos" value={`${b.triangleCount}`} tokens={tokens} />
                 </div>
               ))}
             </div>
@@ -529,12 +526,12 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
 
           {kind.type === 'export_mesh' && (
             <div className="space-y-3">
-              <FieldLabel label="Format" tokens={tokens}>
+              <FieldLabel label="Formato" tokens={tokens}>
                 <div className="space-y-1.5">
                   {[
-                    { id: 'stl', label: 'STL (Binary .stl)', desc: 'Standard for 3D printing & slicers' },
-                    { id: 'obj', label: 'Wavefront OBJ (.obj)', desc: 'Universal polygonal mesh format' },
-                    { id: 'glb', label: 'glTF Binary (.glb)', desc: 'Compact PBR 3D scene format' },
+                    { id: 'stl', label: 'STL (Binário .stl)', desc: 'Padrão para impressão 3D e fatiadores' },
+                    { id: 'obj', label: 'Wavefront OBJ (.obj)', desc: 'Formato universal de malha poligonal' },
+                    { id: 'glb', label: 'glTF Binário (.glb)', desc: 'Formato 3D compacto com materiais PBR' },
                   ].map((opt) => (
                     <button
                       key={opt.id}
@@ -558,7 +555,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Rodapé */}
         <div
           className="h-[48px] px-3 border-t flex items-center justify-end gap-2 shrink-0"
           style={{ backgroundColor: tokens.dialogFooter, borderColor: tokens.dialogRule }}
@@ -574,7 +571,7 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
                 color: tokens.text,
               }}
             >
-              Cancel
+              Cancelar
             </button>
           )}
           <button
@@ -583,11 +580,11 @@ export const FeatureDialog: React.FC<FeatureDialogProps> = ({
             style={{ backgroundColor: tokens.accent }}
           >
             {kind.type === 'properties'
-              ? 'Close'
+              ? 'Fechar'
               : kind.type === 'export_mesh'
-              ? 'Export'
+              ? 'Exportar'
               : kind.type === 'parameters'
-              ? 'Apply'
+              ? 'Aplicar'
               : 'OK'}
           </button>
         </div>

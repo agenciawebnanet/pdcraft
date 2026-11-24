@@ -30,7 +30,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       className="flex-1 flex overflow-hidden"
       style={{ backgroundColor: tokens.fileBackground, color: tokens.text }}
     >
-      {/* Left Action Rail (matches SolidCraft's 248px Home rail) */}
+      {/* Barra Lateral de Ações (248px) */}
       <aside
         className="w-[248px] shrink-0 border-r flex flex-col justify-between p-5"
         style={{
@@ -44,7 +44,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <div>
               <h1 className="text-[19px] font-bold tracking-tight leading-tight">PD Craft</h1>
               <p className="text-[11.5px]" style={{ color: tokens.textDim }}>
-                Parametric 3D CAD
+                CAD Paramétrico 3D
               </p>
             </div>
           </div>
@@ -63,7 +63,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               }}
             >
               <FilePlus className="w-4 h-4" />
-              <span>New Design</span>
+              <span>Novo Projeto</span>
             </button>
 
             <button
@@ -77,7 +77,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               }}
             >
               <FolderOpen className="w-4 h-4" />
-              <span>Open Design…</span>
+              <span>Abrir Projeto…</span>
             </button>
 
             <button
@@ -97,32 +97,32 @@ export const HomePage: React.FC<HomePageProps> = ({
               }}
             >
               <Upload className="w-3.5 h-3.5 opacity-75" />
-              <span>Import STL / JSON…</span>
+              <span>Importar STL / JSON…</span>
             </button>
           </div>
         </div>
 
         <div className="pt-4 border-t text-[11px] space-y-1.5" style={{ borderColor: tokens.fileBorder, color: tokens.textDim }}>
           <div className="font-semibold" style={{ color: tokens.text }}>
-            Supported Workflows
+            Recursos Suportados
           </div>
-          <div>• Parametric Sketches & Extrude</div>
-          <div>• Fillets, Shells & Hole Patterns</div>
-          <div>• Sheet Metal Flanges & Hems</div>
-          <div>• STL, OBJ & glTF (.glb) Export</div>
+          <div>• Esboços Paramétricos e Extrusão</div>
+          <div>• Filetes, Casca e Padrões de Furos</div>
+          <div>• Dobras e Bainhas em Chapa Metálica</div>
+          <div>• Exportação STL, OBJ e glTF (.glb)</div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* Área Principal */}
       <main className="flex-1 overflow-y-auto px-10 py-8">
         <div className="max-w-5xl mx-auto space-y-8">
-          {/* Recent Designs */}
+          {/* Projetos Recentes */}
           {recentDocs.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-[15px] font-semibold flex items-center gap-2">
                   <Clock className="w-4 h-4 opacity-70" />
-                  <span>Recent Designs</span>
+                  <span>Projetos Recentes</span>
                 </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
@@ -145,7 +145,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <div className="min-w-0">
                       <div className="text-[13px] font-semibold truncate">{doc.name}</div>
                       <div className="text-[11px] mt-0.5" style={{ color: tokens.textDim }}>
-                        {doc.features.length} features • {doc.units}
+                        {doc.features.length} operações • {doc.units}
                       </div>
                     </div>
                     <button
@@ -155,7 +155,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         onRemoveRecent(doc.id);
                       }}
                       className="p-1.5 rounded opacity-0 group-hover:opacity-75 hover:!opacity-100 cursor-pointer"
-                      title="Remove from Recent"
+                      title="Remover dos Recentes"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -165,16 +165,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             </section>
           )}
 
-          {/* Built-in Samples */}
+          {/* Exemplos Integrados */}
           <section>
             <div className="flex items-center justify-between mb-3.5">
               <div>
                 <h2 className="text-[17px] font-semibold flex items-center gap-2">
                   <Layers className="w-4 h-4" style={{ color: tokens.accent }} />
-                  <span>Built-in Samples</span>
+                  <span>Exemplos Integrados</span>
                 </h2>
                 <p className="text-[12px] mt-0.5" style={{ color: tokens.textDim }}>
-                  Select a sample to open its editable parametric timeline, parameters, and 3D assembly.
+                  Selecione um exemplo para abrir sua linha do tempo paramétrica, parâmetros e montagem 3D editável.
                 </p>
               </div>
             </div>

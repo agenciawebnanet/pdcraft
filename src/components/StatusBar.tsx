@@ -32,15 +32,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         color: tokens.textDim,
       }}
     >
-      {/* Left Hint / Selection Status */}
+      {/* Dica / Status de Seleção */}
       <div className="truncate pr-4">{statusMessage}</div>
 
-      {/* Right Telemetry & Selectors */}
+      {/* Telemetria e Seletores à Direita */}
       <div className="flex items-center gap-3 shrink-0">
         {activeSketchName && (
           <>
             <span className="flex items-center gap-1.5" style={{ color: tokens.text }}>
-              <span>Editing {activeSketchName}</span>
+              <span>Editando {activeSketchName}</span>
             </span>
             <span className="h-3 w-px" style={{ backgroundColor: tokens.border }} />
             <span
@@ -58,8 +58,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
               />
               <span>
                 {sketchEntityCount === 0
-                  ? 'No geometry yet'
-                  : `Sketch active (${sketchEntityCount} entities)`}
+                  ? 'Nenhuma geometria ainda'
+                  : `Esboço ativo (${sketchEntityCount} entidades)`}
               </span>
             </span>
             <span className="h-3 w-px" style={{ backgroundColor: tokens.border }} />
@@ -67,7 +67,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         )}
 
         <label className="flex items-center gap-1 cursor-pointer">
-          <span>Units:</span>
+          <span>Unidades:</span>
           <select
             value={units}
             onChange={(e) => onChangeUnits(e.target.value as DesignUnit)}
