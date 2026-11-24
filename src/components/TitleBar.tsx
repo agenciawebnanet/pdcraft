@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
+  Clock,
   Download,
   FilePlus,
   FolderOpen,
@@ -10,6 +11,7 @@ import {
   Redo2,
   Save,
   Search,
+  ShieldCheck,
   Sun,
   Undo2,
   X,
@@ -39,6 +41,9 @@ interface TitleBarProps {
   onToggleTheme: () => void;
   onOpenCommandPalette: () => void;
   onOpenAbout: () => void;
+  trialLabel?: string;
+  isLicensed?: boolean;
+  onOpenTrialModal?: () => void;
 }
 
 export const TitleBar: React.FC<TitleBarProps> = ({
@@ -62,6 +67,9 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   onToggleTheme,
   onOpenCommandPalette,
   onOpenAbout,
+  trialLabel,
+  isLicensed,
+  onOpenTrialModal,
 }) => {
   const [fileMenuOpen, setFileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -282,8 +290,30 @@ export const TitleBar: React.FC<TitleBarProps> = ({
         </div>
       </div>
 
-      {/* Direita: Busca de Comandos + Alternar Tema */}
+      {/* Direita: Teste 24h Cloud + Busca de Comandos + Alternar Tema */}
       <div className="flex items-center gap-1.5 shrink-0">
+        {trialLabel && onOpenTrialModal && (
+          <button
+            type="button"
+            onClick={onOpenTrialModal}
+            className="h-[25px] px-2.5 rounded-[5px] flex items-center gap-1.5 text-[11px] font-medium transition-colors cursor-pointer"
+            style={{
+              backgroundColor: isLicensed
+                ? 'rgba(22, 163, 74, 0.22)'
+                : 'rgba(255, 255, 255, 0.1)',
+              color: isLicensed ? '#86efac' : tokens.appBarText,
+            }}
+            title="PD Craft Cloud — Ver registro local e tempo de teste"
+          >
+            {isLicensed ? (
+              <ShieldCheck className="w-3 h-3" />
+            ) : (
+              <Clock className="w-3 h-3 opacity-85" />
+            )}
+            <span className="cad-mono">{trialLabel}</span>
+          </button>
+        )}
+
         {hasActiveDesign && (
           <button
             type="button"

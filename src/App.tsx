@@ -34,6 +34,19 @@ import {
   CommandPaletteModal,
   PaletteCommand,
 } from './components/CommandPaletteModal';
+import { TrialDetailsModal, TrialExpiredGate } from './components/TrialGate';
+import {
+  appendTrialLog,
+  evaluateRegistryState,
+  formatRemainingDurationPtBr,
+  getRemainingTrialMs,
+  initializeTrialRegistrySync,
+  LocalTrialRegistry,
+  mergeWithIndexedDbRegistry,
+  persistTrialRegistry,
+  readIndexedDbRegistry,
+  verifyActivationKey,
+} from './utils/trialManager';
 
 const STORAGE_RECENT_KEY = 'pdcraft_recent_designs_v1';
 const STORAGE_THEME_KEY = 'pdcraft_theme_v1';
@@ -108,7 +121,14 @@ export default function App() {
   // Modals
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [trialModalOpen, setTrialModalOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState('Pronto — Selecione um corpo, dê duplo clique num plano para esboçar ou pressione Ctrl+K');
+
+  // PD Craft Cloud — Registro local & Teste 24h
+  const [trialRegistry, setTrialRegistry] = useState<LocalTrialRegistry>(() =>
+    initializeTrialRegistrySync()
+  );
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,6 +154,80 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_THEME_KEY, themeMode);
   }, [themeMode]);
+
+  // Reconciliar registro local com IndexedDB ao iniciar
+  useEffect(() => {
+    let active = true;
+    readIndexedDbRegistry().then((idbReg) => {
+      if (!active || !idbReg) return;
+      setTrialRegistry((curr) => mergeWithIndexedDbRegistry(curr, idbReg));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Ticker de verificação das 24h e persistência periódica do registro local
+  useEffect(() => {
+    let tickCount = 0;
+    const checkNow = (forcePersist = false) => {
+      const t = Date.now();
+      setNowMs(t);
+      setTrialRegistry((curr) => {
+        const next = evaluateRegistryState(curr, t);
+        if (forcePersist || next.status !== curr.status || next.logs.length !== curr.logs.length) {
+          persistTrialRegistry(next);
+        }
+        return next;
+      });
+    };
+
+    const timer = setInterval(() => {
+      tickCount += 1;
+      checkNow(tickCount % 15 === 0);
+    }, 1000);
+
+    const onVisibility = () => checkNow(true);
+    window.addEventListener('focus', onVisibility);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', onVisibility);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
+  const handleLogEvent = useCallback((event: string, detail: string) => {
+    setTrialRegistry((curr) => appendTrialLog(curr, event, detail));
+  }, []);
+
+  const handleActivateLicenseKey = useCallback(
+    (candidateKey: string): boolean => {
+      if (!verifyActivationKey(trialRegistry.registrationId, candidateKey)) {
+        setTrialRegistry((curr) =>
+          appendTrialLog(curr, 'CHAVE_INVALIDA', 'Tentativa de ativação com chave inválida.')
+        );
+        return false;
+      }
+      const now = Date.now();
+      setTrialRegistry((curr) => {
+        const updated = appendTrialLog(
+          {
+            ...curr,
+            status: 'licensed',
+            licenseKey: candidateKey.trim().toUpperCase(),
+            activatedAt: now,
+          },
+          'LICENCA_ATIVADA',
+          'Licença paga ativada na máquina local.'
+        );
+        persistTrialRegistry(updated);
+        return updated;
+      });
+      return true;
+    },
+    [trialRegistry.registrationId]
+  );
 
   // Save recent documents safely
   const recordRecent = useCallback((doc: DesignDocument) => {
@@ -210,10 +304,11 @@ export default function App() {
       setSelectedBodyId(null);
       setActiveTab(doc.features.some((f) => f.kind.startsWith('sheet.')) ? 'SHEET METAL' : 'MODEL');
       recordRecent(doc);
+      handleLogEvent('PROJETO_ABERTO', `Projeto aberto: ${doc.name}`);
       setTimeout(() => setFitCommandSeq((n) => n + 1), 60);
       setStatusMessage(`Aberto: ${doc.name}`);
     },
-    [recordRecent]
+    [recordRecent, handleLogEvent]
   );
 
   const handleNewDesign = useCallback(() => {
@@ -523,6 +618,7 @@ export default function App() {
   // Global keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (trialRegistry.status === 'expired') return;
       const target = e.target as HTMLElement | null;
       const isInput = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 
@@ -553,7 +649,23 @@ export default function App() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showHome, activeDoc, handleUndo, handleRedo, paletteOpen, activeDialog, measureActive]);
+  }, [trialRegistry.status, showHome, activeDoc, handleUndo, handleRedo, paletteOpen, activeDialog, measureActive]);
+
+  if (trialRegistry.status === 'expired') {
+    return (
+      <TrialExpiredGate
+        tokens={tokens}
+        registry={trialRegistry}
+        onSupportClick={() =>
+          handleLogEvent(
+            'SUPORTE_WHATSAPP',
+            'Cliente direcionado ao suporte WhatsApp (66) 99977-5501 após fim das 24h.'
+          )
+        }
+        onActivateKey={handleActivateLicenseKey}
+      />
+    );
+  }
 
   return (
     <div
@@ -585,15 +697,42 @@ export default function App() {
         onCloseDoc={handleCloseDoc}
         onNewDesign={handleNewDesign}
         onOpenFile={() => fileInputRef.current?.click()}
-        onSaveProject={() => activeDoc && exportDocumentJSON(activeDoc)}
-        onExportSTL={() => activeDoc && evaluated && exportSTL(activeDoc, evaluated, true)}
-        onExportOBJ={() => activeDoc && evaluated && exportOBJ(activeDoc, evaluated)}
-        onExportGLB={() => activeDoc && evaluated && exportGLB(activeDoc, evaluated)}
+        onSaveProject={() => {
+          if (activeDoc) {
+            exportDocumentJSON(activeDoc);
+            handleLogEvent('EXPORTACAO', `Projeto salvo em JSON: ${activeDoc.name}`);
+          }
+        }}
+        onExportSTL={() => {
+          if (activeDoc && evaluated) {
+            exportSTL(activeDoc, evaluated, true);
+            handleLogEvent('EXPORTACAO', `Malha STL exportada: ${activeDoc.name}`);
+          }
+        }}
+        onExportOBJ={() => {
+          if (activeDoc && evaluated) {
+            exportOBJ(activeDoc, evaluated);
+            handleLogEvent('EXPORTACAO', `Malha OBJ exportada: ${activeDoc.name}`);
+          }
+        }}
+        onExportGLB={() => {
+          if (activeDoc && evaluated) {
+            exportGLB(activeDoc, evaluated);
+            handleLogEvent('EXPORTACAO', `Malha glTF exportada: ${activeDoc.name}`);
+          }
+        }}
         onUndo={handleUndo}
         onRedo={handleRedo}
         onToggleTheme={() => setThemeMode((m) => (m === 'light' ? 'dark' : 'light'))}
         onOpenCommandPalette={() => setPaletteOpen(true)}
         onOpenAbout={() => setAboutOpen(true)}
+        trialLabel={
+          trialRegistry.status === 'licensed'
+            ? 'Cloud Ativo'
+            : `Teste 24h: ${formatRemainingDurationPtBr(getRemainingTrialMs(trialRegistry, nowMs))}`
+        }
+        isLicensed={trialRegistry.status === 'licensed'}
+        onOpenTrialModal={() => setTrialModalOpen(true)}
       />
 
       {/* Body: Either Home Start Page or Full CAD Workspace */}
@@ -842,6 +981,18 @@ export default function App() {
       />
 
       <AboutModal tokens={tokens} open={aboutOpen} onClose={() => setAboutOpen(false)} />
+
+      <TrialDetailsModal
+        tokens={tokens}
+        open={trialModalOpen}
+        registry={trialRegistry}
+        nowMs={nowMs}
+        onClose={() => setTrialModalOpen(false)}
+        onSupportClick={() =>
+          handleLogEvent('SUPORTE_WHATSAPP', 'Acesso ao suporte WhatsApp (66) 99977-5501.')
+        }
+        onActivateKey={handleActivateLicenseKey}
+      />
     </div>
   );
 }
