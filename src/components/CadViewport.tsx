@@ -578,6 +578,8 @@ export const CadViewport: React.FC<CadViewportProps> = ({
       const isWire = doc.visualStyle === 'wireframe';
       const isXray = doc.visualStyle === 'xray';
 
+      const isRawBody = body.meshes.some((m) => m.kind === 'raw');
+
       const material = new THREE.MeshPhysicalMaterial({
         color: isSelected ? '#4c7fcb' : baseColor,
         metalness: isSelected ? 0.25 : matSpec.metalness,
@@ -590,7 +592,7 @@ export const CadViewport: React.FC<CadViewportProps> = ({
         emissiveIntensity: isSelected ? 0.25 : 0,
         clippingPlanes: clipPlanes,
         clipShadows: true,
-        side: doc.sectionEnabled ? THREE.DoubleSide : THREE.FrontSide,
+        side: doc.sectionEnabled || isRawBody ? THREE.DoubleSide : THREE.FrontSide,
       });
 
       for (const part of body.meshes) {
@@ -603,7 +605,9 @@ export const CadViewport: React.FC<CadViewportProps> = ({
         st.bodiesGroup.add(mesh);
         st.bodyMeshes.push(mesh);
 
-        if (doc.visualStyle === 'shaded_edges' || doc.visualStyle === 'xray') {
+        const posCount = geom.getAttribute('position')?.count ?? 0;
+        const skipEdges = part.kind === 'raw' && posCount > 60000;
+        if (!skipEdges && (doc.visualStyle === 'shaded_edges' || doc.visualStyle === 'xray')) {
           const edgesGeom = new THREE.EdgesGeometry(geom, 24);
           const edgeMat = new THREE.LineBasicMaterial({
             color: isSelected ? tokens.accent : edgeColor,
@@ -719,6 +723,11 @@ export const CadViewport: React.FC<CadViewportProps> = ({
       box.expandByObject(mesh);
     }
     if (box.isEmpty()) {
+      st.camera.near = 0.5;
+      st.camera.far = 4000;
+      st.camera.updateProjectionMatrix();
+      st.controls.minDistance = 12;
+      st.controls.maxDistance = 1200;
       st.animTargetLook = new THREE.Vector3(0, 0, 0);
       st.animTargetPos = new THREE.Vector3(110, 85, 110);
     } else {
@@ -726,7 +735,14 @@ export const CadViewport: React.FC<CadViewportProps> = ({
       const size = new THREE.Vector3();
       box.getCenter(center);
       box.getSize(size);
-      const maxDim = Math.max(size.x, size.y, size.z, 30);
+      const rawMax = Math.max(size.x, size.y, size.z);
+      const maxDim = rawMax > 0.0001 ? rawMax : 30;
+      st.camera.near = Math.max(0.001, maxDim * 0.002);
+      st.camera.far = Math.max(4000, maxDim * 50);
+      st.camera.updateProjectionMatrix();
+      st.controls.minDistance = Math.max(0.01, maxDim * 0.05);
+      st.controls.maxDistance = Math.max(1200, maxDim * 25);
+
       const dir = st.camera.position.clone().sub(st.controls.target).normalize();
       if (dir.lengthSq() < 0.01) dir.set(1, 0.8, 1).normalize();
       st.animTargetLook = center;
@@ -748,7 +764,14 @@ export const CadViewport: React.FC<CadViewportProps> = ({
     for (const mesh of st.bodyMeshes) box.expandByObject(mesh);
     const center = box.isEmpty() ? new THREE.Vector3(0, 0, 0) : box.getCenter(new THREE.Vector3());
     const size = box.isEmpty() ? new THREE.Vector3(60, 40, 60) : box.getSize(new THREE.Vector3());
-    const dist = Math.max(size.x, size.y, size.z, 50) * 2.1;
+    const rawMax = Math.max(size.x, size.y, size.z);
+    const maxDim = rawMax > 0.0001 ? rawMax : 50;
+    const dist = maxDim * 2.1;
+    st.camera.near = Math.max(0.001, maxDim * 0.002);
+    st.camera.far = Math.max(4000, maxDim * 50);
+    st.camera.updateProjectionMatrix();
+    st.controls.minDistance = Math.max(0.01, maxDim * 0.05);
+    st.controls.maxDistance = Math.max(1200, maxDim * 25);
 
     _targetLook.copy(center);
     switch (cameraCommand.preset) {

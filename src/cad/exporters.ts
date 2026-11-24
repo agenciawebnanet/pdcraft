@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DesignDocument, EvaluatedDocument } from './types';
@@ -100,38 +101,101 @@ export function exportGLB(doc: DesignDocument, evaluated: EvaluatedDocument) {
 }
 
 /**
- * Parses an ASCII or Binary STL file into raw triangle vertex positions (scaled/positioned for Three.js).
+ * Parses an ASCII or Binary STL file into raw triangle vertex positions (Three.js Y-up).
  */
-export function parseSTLBuffer(buffer: ArrayBuffer): number[] {
-  const view = new DataView(buffer);
-  const decoder = new TextDecoder();
-  const headerStr = decoder.decode(new Uint8Array(buffer, 0, Math.min(80, buffer.byteLength)));
-  const isAscii = headerStr.trimStart().startsWith('solid') && buffer.byteLength < 5_000_000 && /facet\s+normal/i.test(decoder.decode(new Uint8Array(buffer, 0, Math.min(512, buffer.byteLength))));
+export function parseSTLBuffer(buffer: ArrayBuffer): Float32Array {
+  if (!buffer || buffer.byteLength === 0) return new Float32Array(0);
 
-  const positions: number[] = [];
-
-  if (isAscii) {
-    const text = decoder.decode(buffer);
-    const regex = /vertex\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/g;
-    let m: RegExpExecArray | null;
-    while ((m = regex.exec(text)) !== null) {
-      positions.push(parseFloat(m[1]), parseFloat(m[3]), -parseFloat(m[2]));
+  // 1. Parser principal via STLLoader oficial do Three.js (suporta ASCII e Binário de qualquer tamanho)
+  try {
+    const loader = new STLLoader();
+    const geom = loader.parse(buffer);
+    const nonIndexed = geom.index ? geom.toNonIndexed() : geom;
+    const pos = nonIndexed.getAttribute('position');
+    if (pos && pos.count >= 3) {
+      const out = new Float32Array(pos.count * 3);
+      let validCount = 0;
+      for (let i = 0; i < pos.count; i += 3) {
+        const x0 = pos.getX(i);
+        const y0 = pos.getY(i);
+        const z0 = pos.getZ(i);
+        const x1 = pos.getX(i + 1);
+        const y1 = pos.getY(i + 1);
+        const z1 = pos.getZ(i + 1);
+        const x2 = pos.getX(i + 2);
+        const y2 = pos.getY(i + 2);
+        const z2 = pos.getZ(i + 2);
+        if (
+          Number.isFinite(x0) && Number.isFinite(y0) && Number.isFinite(z0) &&
+          Number.isFinite(x1) && Number.isFinite(y1) && Number.isFinite(z1) &&
+          Number.isFinite(x2) && Number.isFinite(y2) && Number.isFinite(z2)
+        ) {
+          // Converte CAD Z-up (x, y, z) -> Three.js Y-up (x, z, -y)
+          out[validCount++] = x0;
+          out[validCount++] = z0;
+          out[validCount++] = -y0;
+          out[validCount++] = x1;
+          out[validCount++] = z1;
+          out[validCount++] = -y1;
+          out[validCount++] = x2;
+          out[validCount++] = z2;
+          out[validCount++] = -y2;
+        }
+      }
+      if (nonIndexed !== geom) nonIndexed.dispose();
+      geom.dispose();
+      if (validCount >= 9) {
+        return validCount === out.length ? out : out.subarray(0, validCount);
+      }
+    } else {
+      if (nonIndexed !== geom) nonIndexed.dispose();
+      geom.dispose();
     }
-    return positions;
+  } catch {
+    // Segue para fallback manual caso o arquivo tenha formatação não padrão
   }
 
-  if (buffer.byteLength < 84) return positions;
-  const triCount = view.getUint32(80, true);
+  // 2. Fallback manual para ASCII (qualquer capitalização, qualquer tamanho) ou Binário
+  const view = new DataView(buffer);
+  const expectedBinarySize = buffer.byteLength >= 84 ? 84 + view.getUint32(80, true) * 50 : -1;
+  const decoder = new TextDecoder('utf-8', { fatal: false });
+  const sampleText = decoder.decode(new Uint8Array(buffer, 0, Math.min(4096, buffer.byteLength)));
+  const looksLikeAscii =
+    expectedBinarySize !== buffer.byteLength &&
+    (/^\s*(?:\uFEFF)?solid\b/i.test(sampleText) || /facet\s+normal/i.test(sampleText));
+
+  if (looksLikeAscii) {
+    const text = decoder.decode(buffer);
+    const regex = /vertex\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)\s+([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/gi;
+    const coords: number[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(text)) !== null) {
+      const vx = parseFloat(m[1]);
+      const vy = parseFloat(m[2]);
+      const vz = parseFloat(m[3]);
+      if (Number.isFinite(vx) && Number.isFinite(vy) && Number.isFinite(vz)) {
+        coords.push(vx, vz, -vy);
+      }
+    }
+    return new Float32Array(coords);
+  }
+
+  if (buffer.byteLength < 84) return new Float32Array(0);
+  const maxPossibleTris = Math.floor((buffer.byteLength - 84) / 50);
+  const triCount = Math.min(view.getUint32(80, true), maxPossibleTris);
+  const out = new Float32Array(triCount * 9);
+  let outIdx = 0;
   let offset = 84;
-  for (let i = 0; i < triCount && offset + 50 <= buffer.byteLength; i++) {
-    // Skip normal (12 bytes)
+  for (let i = 0; i < triCount; i++) {
     for (let v = 0; v < 3; v++) {
       const vx = view.getFloat32(offset + 12 + v * 12, true);
       const vy = view.getFloat32(offset + 16 + v * 12, true);
       const vz = view.getFloat32(offset + 20 + v * 12, true);
-      positions.push(vx, vz, -vy);
+      out[outIdx++] = Number.isFinite(vx) ? vx : 0;
+      out[outIdx++] = Number.isFinite(vz) ? vz : 0;
+      out[outIdx++] = Number.isFinite(vy) ? -vy : 0;
     }
     offset += 50;
   }
-  return positions;
+  return out;
 }

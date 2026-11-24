@@ -229,14 +229,22 @@ export default function App() {
     [trialRegistry.registrationId]
   );
 
-  // Save recent documents safely
+  // Save recent documents safely (evita serializar malhas STL gigantes no localStorage)
   const recordRecent = useCallback((doc: DesignDocument) => {
+    const hasHeavyMesh = doc.features.some(
+      (f) =>
+        f.kind === 'imported.mesh' &&
+        f.params?.positions &&
+        (f.params.positions as ArrayLike<number>).length > 30000
+    );
+    if (hasHeavyMesh) return;
+
     setRecentDocs((prev) => {
       const next = [{ ...doc, savedAt: Date.now() }, ...prev.filter((d) => d.id !== doc.id)].slice(0, 9);
       try {
         localStorage.setItem(STORAGE_RECENT_KEY, JSON.stringify(next));
       } catch {
-        // Ignore quota errors on large imported STLs
+        // Ignore quota errors
       }
       return next;
     });
@@ -341,52 +349,91 @@ export default function App() {
     });
   };
 
+  const [importErrorBanner, setImportErrorBanner] = useState<string | null>(null);
+
+  const processImportedFile = useCallback(
+    async (file: File) => {
+      setImportErrorBanner(null);
+      const lower = file.name.toLowerCase();
+
+      if (lower.endsWith('.json')) {
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text) as DesignDocument;
+          if (parsed && Array.isArray(parsed.features)) {
+            parsed.id = `import_${Date.now()}`;
+            openDocument(parsed);
+            return;
+          }
+          setStatusMessage('Arquivo JSON de projeto inválido');
+          setImportErrorBanner('Arquivo JSON de projeto inválido.');
+        } catch {
+          setStatusMessage('Arquivo JSON de projeto inválido');
+          setImportErrorBanner('Não foi possível ler o arquivo JSON.');
+        }
+        return;
+      }
+
+      if (lower.endsWith('.stl')) {
+        try {
+          const buf = await file.arrayBuffer();
+          const positions = parseSTLBuffer(buf);
+          if (positions.length >= 9) {
+            const cleanName = file.name.replace(/\.stl$/i, '');
+            const baseDoc = activeDoc && !showHome ? activeDoc : createEmptyDesign(cleanName);
+            const newFeat: CadFeature = {
+              id: `stl_${Date.now()}`,
+              kind: 'imported.mesh',
+              name: file.name,
+              componentId: baseDoc.components[0]?.id ?? 'root',
+              params: { body_name: cleanName, positions },
+            };
+            if (activeDoc && !showHome) {
+              updateActiveDoc((d) => ({
+                ...d,
+                features: [...d.features, newFeat],
+                rollbackIndex: d.features.length + 1,
+              }));
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => setFitCommandSeq((n) => n + 1));
+              });
+            } else {
+              baseDoc.features.push(newFeat);
+              baseDoc.rollbackIndex = baseDoc.features.length;
+              openDocument(baseDoc);
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => setFitCommandSeq((n) => n + 1));
+              });
+            }
+            const triCount = Math.floor(positions.length / 9);
+            handleLogEvent('IMPORTACAO_STL', `STL importado: ${file.name} (${triCount} triângulos)`);
+            setStatusMessage(`STL importado (${triCount.toLocaleString('pt-BR')} triângulos)`);
+          } else {
+            const msg = 'O arquivo STL está vazio ou em formato não reconhecido.';
+            setStatusMessage(msg);
+            setImportErrorBanner(msg);
+          }
+        } catch {
+          const msg = 'Erro ao ler o arquivo STL selecionado.';
+          setStatusMessage(msg);
+          setImportErrorBanner(msg);
+        }
+        return;
+      }
+
+      const unsupported = 'Formato não suportado. Selecione um arquivo .stl ou .pdcraft.json.';
+      setStatusMessage(unsupported);
+      setImportErrorBanner(unsupported);
+    },
+    [activeDoc, showHome, openDocument, updateActiveDoc, handleLogEvent]
+  );
+
   // File Open (.pdcraft.json / .json / .stl)
   const handleFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-
-    const lower = file.name.toLowerCase();
-    if (lower.endsWith('.json')) {
-      try {
-        const text = await file.text();
-        const parsed = JSON.parse(text) as DesignDocument;
-        if (parsed && Array.isArray(parsed.features)) {
-          parsed.id = `import_${Date.now()}`;
-          openDocument(parsed);
-          return;
-        }
-      } catch {
-        setStatusMessage('Arquivo JSON de projeto inválido');
-      }
-    } else if (lower.endsWith('.stl')) {
-      const buf = await file.arrayBuffer();
-      const positions = parseSTLBuffer(buf);
-      if (positions.length > 0) {
-        const baseDoc = activeDoc && !showHome ? activeDoc : createEmptyDesign(file.name.replace(/\.stl$/i, ''));
-        const newFeat: CadFeature = {
-          id: `stl_${Date.now()}`,
-          kind: 'imported.mesh',
-          name: file.name,
-          componentId: baseDoc.components[0]?.id ?? 'root',
-          params: { body_name: file.name.replace(/\.stl$/i, ''), positions },
-        };
-        if (activeDoc && !showHome) {
-          updateActiveDoc((d) => ({
-            ...d,
-            features: [...d.features, newFeat],
-            rollbackIndex: d.features.length + 1,
-          }));
-          setTimeout(() => setFitCommandSeq((n) => n + 1), 60);
-        } else {
-          baseDoc.features.push(newFeat);
-          baseDoc.rollbackIndex = baseDoc.features.length;
-          openDocument(baseDoc);
-        }
-        setStatusMessage(`STL importado (${(positions.length / 9).toLocaleString('pt-BR')} triângulos)`);
-      }
-    }
+    await processImportedFile(file);
   };
 
   // Iniciar Esboço no Plano
@@ -669,17 +716,47 @@ export default function App() {
 
   return (
     <div
-      className="w-screen h-screen flex flex-col overflow-hidden"
+      className="w-screen h-screen flex flex-col overflow-hidden relative"
       style={{ backgroundColor: tokens.panel, color: tokens.text }}
+      onDragOver={(e) => {
+        e.preventDefault();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+          void processImportedFile(file);
+        }
+      }}
     >
       {/* Hidden file picker for .pdcraft.json / .stl */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".json,.stl"
+        accept=".json,.pdcraft.json,.stl,.STL,application/json,model/stl,application/sla,application/octet-stream"
         className="hidden"
         onChange={handleFilePicked}
       />
+
+      {importErrorBanner && (
+        <div
+          className="fixed bottom-9 right-4 z-50 px-3.5 py-2 rounded-[6px] border shadow-lg text-[12px] flex items-center gap-3"
+          style={{
+            backgroundColor: tokens.panel,
+            borderColor: tokens.error,
+            color: tokens.text,
+          }}
+        >
+          <span>{importErrorBanner}</span>
+          <button
+            type="button"
+            onClick={() => setImportErrorBanner(null)}
+            className="text-[11px] font-semibold opacity-75 hover:opacity-100 cursor-pointer"
+          >
+            Fechar
+          </button>
+        </div>
+      )}
 
       {/* Top Application Title Bar */}
       <TitleBar

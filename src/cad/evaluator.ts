@@ -257,7 +257,11 @@ export function buildPartGeometry(part: EvaluatedMeshPart): THREE.BufferGeometry
     geom = new THREE.LatheGeometry(pts, 48, 0, angle);
   } else if (part.kind === 'raw' && part.positions) {
     geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(part.positions, 3));
+    const posArray =
+      part.positions instanceof Float32Array
+        ? part.positions
+        : new Float32Array(part.positions);
+    geom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
     geom.computeVertexNormals();
   } else {
     geom = new THREE.BoxGeometry(10, 10, 10);
@@ -306,6 +310,8 @@ function computeMeshMassProps(geoms: THREE.BufferGeometry[]): {
   const ab = new THREE.Vector3();
   const ac = new THREE.Vector3();
   const cross = new THREE.Vector3();
+  const bcCross = new THREE.Vector3();
+  const centroid = new THREE.Vector3();
 
   for (const g of geoms) {
     if (g.boundingBox) bbox.union(g.boundingBox);
@@ -314,7 +320,7 @@ function computeMeshMassProps(geoms: THREE.BufferGeometry[]): {
     const index = g.getIndex();
     const count = index ? index.count : pos.count;
 
-    for (let i = 0; i < count; i += 3) {
+    for (let i = 0; i + 2 < count; i += 3) {
       const i0 = index ? index.getX(i) : i;
       const i1 = index ? index.getX(i + 1) : i + 1;
       const i2 = index ? index.getX(i + 2) : i + 2;
@@ -327,11 +333,12 @@ function computeMeshMassProps(geoms: THREE.BufferGeometry[]): {
       cross.crossVectors(ab, ac);
       area += 0.5 * cross.length();
 
-      const signedTetVol = a.dot(b.clone().cross(c)) / 6.0;
+      bcCross.crossVectors(b, c);
+      const signedTetVol = a.dot(bcCross) / 6.0;
       volume += signedTetVol;
 
-      const tetCentroid = a.clone().add(b).add(c).multiplyScalar(0.25);
-      weightedCenter.addScaledVector(tetCentroid, signedTetVol);
+      centroid.copy(a).add(b).add(c).multiplyScalar(0.25);
+      weightedCenter.addScaledVector(centroid, signedTetVol);
       triCount++;
     }
   }
@@ -889,14 +896,25 @@ export function evaluateDocument(doc: DesignDocument): EvaluatedDocument {
       }
 
       case 'imported.mesh': {
-        if (Array.isArray(p.positions)) {
-          const bodyName = p.body_name || feat.name || 'Malha Importada';
-          const acc = ensureBody(bodyName, compId);
-          acc.parts.push({
-            kind: 'raw',
-            positions: p.positions,
-            transform: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
-          });
+        const rawPos = p.positions;
+        const hasPos =
+          Array.isArray(rawPos) ||
+          rawPos instanceof Float32Array ||
+          (rawPos && typeof rawPos === 'object' && typeof (rawPos as { length?: number }).length === 'number');
+        if (hasPos) {
+          const normalizedPos =
+            rawPos instanceof Float32Array || Array.isArray(rawPos)
+              ? rawPos
+              : Array.from(rawPos as ArrayLike<number>);
+          if (normalizedPos.length >= 9) {
+            const bodyName = p.body_name || feat.name || 'Malha Importada';
+            const acc = ensureBody(bodyName, compId);
+            acc.parts.push({
+              kind: 'raw',
+              positions: normalizedPos,
+              transform: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
+            });
+          }
         }
         break;
       }

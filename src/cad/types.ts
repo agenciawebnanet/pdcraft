@@ -180,7 +180,7 @@ export interface EvaluatedMeshPart {
   lathePoints?: [number, number][];
   latheAngleDeg?: number;
   // Raw triangles (e.g. imported STL/OBJ)
-  positions?: number[];
+  positions?: number[] | Float32Array;
 }
 
 export interface EvaluatedDocument {
